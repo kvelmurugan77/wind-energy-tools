@@ -1,25 +1,25 @@
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Fix and overhaul PCV Site Selection Tool for GitHub Pages deployment
+Task: Complete rebuild of PCV Site Selection Tool - mast location as OUTPUT not INPUT
 
 Work Log:
-- Read and analyzed the existing index.html (2553 lines) with embedded PCV tool
-- Identified bugs: (1) undefined `self` reference in runAnalysis(), (2) file upload visual feedback issues, (3) no .map terrain file support, (4) no real ERA5T download capability
-- Split the tools section into a standalone pcv-tool.html (2213 lines, 103KB)
-- Updated portfolio index.html (1225 lines, 82KB) with clean Tools section linking to standalone tool
-- Fixed navigation button alignment (added flex-shrink:0 to nav items, adjusted gap)
-- Removed ~1300 lines of unused inline tool CSS/JS from portfolio
-- Built comprehensive 6-step wizard workflow in pcv-tool.html
+- Analyzed existing pcv-tool.html (2213 lines) and identified fundamental design flaw: tool was asking users to input mast locations when mast placement IS the output
+- Completely rewrote /home/z/my-project/download/pcv-tool.html (1339 lines) with correct architecture
+- Reordered workflow: Layout → Wind Data → Wind Rose → Visualization → Mast Proposal → Report
+- Removed all mast input (upload, manual entry, table, validation)
+- Added automatic ERA5T download from layout centroid when user skips wind data step
+- Implemented mast proposal engine: identifies first-row WTGs, generates 30+ candidate positions per qualifying WTG at 2D-5D upstream with azimuth offsets
+- Added scoring algorithm: distance, terrain validity, freestream, first-row bonus, free sector bonus, multi-WTG bonus
+- Added deduplication to prevent overlapping proposals
+- Added 1-mast-to-2-WTG configuration optimization
+- Improved WAsP .map file parsing (skips IG, BM, RZ, OB headers, handles various delimiters)
+- Visualization shows proposed mast locations as red triangles with dashed links to target WTGs
+- DNV-style report generation with all IEC 61400-12-1 parameters
 
 Stage Summary:
-- **index.html** (82KB): Portfolio page with fixed nav alignment + Tools card linking to standalone tool
-- **pcv-tool.html** (103KB): Complete standalone PCV analysis tool with:
-  - Step 1: Wind data (CSV upload + ERA5T download from Open-Meteo API)
-  - Step 2: Wind rose + predominant direction (auto-computed)
-  - Step 3: Site layout (mast, WTG, external WTG, .map terrain file uploads + manual entry)
-  - Step 4: Full layout visualization (responsive canvas with all assets)
-  - Step 5: Analysis results (first-row WTG ID, free sector ≥20° criterion, scoring, configurations)
-  - Step 6: Detailed report (terrain assessment, freestream, DNV-style report)
-- Both files are self-contained HTML for GitHub Pages deployment
-- No server-side code required, no API keys needed
+- File: /home/z/my-project/download/pcv-tool.html (1339 lines, self-contained HTML)
+- Key change: Mast location is now the OUTPUT of the analysis, not an input
+- Workflow: Layout → Wind Data (optional/auto-download) → Wind Rose → Visualization → Mast Proposal → Report
+- Mast proposal algorithm evaluates candidates at 2D, 2.5D, 3D, 3.5D, 4D, 5D distances with ±15° azimuth offsets
+- Supports IEC 61400-12-1:2005 and :2017 standards
