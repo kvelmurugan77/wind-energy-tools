@@ -1,0 +1,399 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ============================================================
+   Wind Resource Assessment Application Styles
+   ============================================================ */
+
+/* Custom scrollbar for data tables */
+.wind-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.wind-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+.wind-scrollbar::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+.wind-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Canvas container */
+.canvas-container {
+  position: relative;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Metric card */
+.metric-card {
+  @apply bg-white rounded-lg border border-slate-200 p-4 shadow-sm;
+}
+
+.metric-card .metric-value {
+  @apply text-2xl font-bold text-slate-800;
+}
+
+.metric-card .metric-label {
+  @apply text-xs font-medium text-slate-500 uppercase tracking-wide;
+}
+
+/* Tab navigation styling for wind app */
+.wind-tabs-nav {
+  @apply flex flex-wrap gap-1 border-b border-slate-200 bg-slate-50 px-4 pt-3;
+}
+
+.wind-tab-trigger {
+  @apply px-4 py-2.5 text-sm font-medium text-slate-600 border-b-2 border-transparent
+    hover:text-slate-900 hover:border-slate-300 transition-colors whitespace-nowrap;
+}
+
+.wind-tab-trigger[data-state="active"] {
+  @apply text-slate-900 border-emerald-600;
+}
+
+/* Status badges */
+.badge-valid {
+  @apply bg-emerald-100 text-emerald-800 border-emerald-200;
+}
+
+.badge-invalid {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.badge-warning {
+  @apply bg-amber-100 text-amber-800 border-amber-200;
+}
+
+.badge-info {
+  @apply bg-slate-100 text-slate-800 border-slate-200;
+}
+
+/* Score indicator */
+.score-bar {
+  @apply h-2 rounded-full transition-all duration-300;
+}
+
+/* DNV-style report header */
+.report-header {
+  @apply bg-slate-900 text-white px-12 py-16;
+}
+
+.report-section {
+  @apply border-b border-slate-200 pb-6 mb-6;
+}
+
+/* Table styling */
+.wind-table th {
+  @apply bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider;
+}
+
+.wind-table td {
+  @apply text-sm text-slate-700;
+}
+
+/* Sector color coding */
+.sector-valid { color: #059669; }
+.sector-wake { color: #d97706; }
+.sector-invalid { color: #dc2626; }
+
+/* Upload drop zone */
+.upload-zone {
+  @apply border-2 border-dashed border-slate-300 rounded-lg p-8 text-center
+    hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors cursor-pointer;
+}
+
+.upload-zone.dragging {
+  @apply border-emerald-500 bg-emerald-50;
+}
+
+/* ============================================================
+   Print Styles for Report Export
+   ============================================================ */
+@media print {
+  /* Reset everything for print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    font-size: 10pt;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+    background: white !important;
+  }
+
+  /* Hide everything except report content */
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Header and footer */
+  .print-header {
+    position: running(pageHeader);
+    text-align: center;
+    font-size: 8pt;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4pt;
+    margin-bottom: 12pt;
+  }
+
+  .print-footer {
+    position: running(pageFooter);
+    text-align: center;
+    font-size: 8pt;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 4pt;
+    margin-top: 12pt;
+  }
+
+  /* Page layout */
+  .print-page {
+    page-break-after: always;
+    padding: 0;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto;
+  }
+
+  /* Title page */
+  .report-title-page {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+  }
+
+  /* Cards */
+  .print-card {
+    border: 1px solid #e2e8f0;
+    padding: 12pt;
+    margin-bottom: 8pt;
+    page-break-inside: avoid;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 4pt 8pt;
+    text-align: left;
+    font-size: 8pt;
+  }
+
+  th {
+    background-color: #f1f5f9 !important;
+    font-weight: 600;
+  }
+
+  /* Canvas/charts - ensure they render */
+  canvas {
+    max-width: 100% !important;
+    max-height: 300pt !important;
+    page-break-inside: avoid;
+  }
+
+  /* Tabs content - show all tabs content */
+  [data-slot="tabs-list"] {
+    display: none !important;
+  }
+
+  [data-slot="tabs-content"] {
+    display: block !important;
+  }
+
+  [data-slot="tabs-content"] > [role="tabpanel"] {
+    display: block !important;
+    page-break-before: always;
+  }
+
+  /* Margins */
+  @page {
+    margin: 1.5cm 2cm;
+    @top-center {
+      content: "Wind Resource Assessment - PCV Report";
+      font-size: 8pt;
+      color: #64748b;
+    }
+
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #64748b;
+    }
+  }
+
+  /* Avoid breaks inside important elements */
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  h1 { font-size: 16pt; margin-top: 12pt; }
+  h2 { font-size: 13pt; margin-top: 10pt; border-bottom: 1pt solid #cbd5e1; padding-bottom: 4pt; }
+  h3 { font-size: 11pt; margin-top: 8pt; }
+
+  /* Progress bars - show as solid */
+  [role="progressbar"] > div {
+    background-color: #059669 !important;
+  }
+}
+
+/* Hide print-only elements on screen */
+.print-only {
+  display: none;
+}
