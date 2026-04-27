@@ -1,38 +1,35 @@
+# WTG PCV Tool - Worklog
+
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Build comprehensive Wind Resource Assessment Web Application for PCV per IEC 61400-12-1
+Task: Test WTG PCV tool with real input data and generate PDF report
 
 Work Log:
-- Analyzed user requirements: PCV WTG selection, mast location proposal, IEC terrain assessment, freestream analysis, DNV-style reporting
-- Initialized Next.js fullstack development environment
-- Built core calculation engine (7 TypeScript modules):
-  - types.ts: 30+ interfaces covering all data structures
-  - geo.ts: Geographic calculations, synthetic terrain generation with value noise + FBM
-  - terrain.ts: IEC 61400-12-1 terrain assessment engine with sector analysis
-  - pcv.ts: PCV optimization, mast location proposal, final sector calculation
-  - freestream.ts: Wake analysis with Jensen model, external wind farm support
-  - sample-data.ts: Realistic demo data generator, CSV parser
-  - index.ts: Main exports
-- Built API routes:
-  - POST /api/terrain: Complete assessment endpoint
-  - GET /api/sample-data: Demo data loader
-- Built 7 React UI components via full-stack-developer subagent:
-  - WindContext.tsx: Shared state management with Context + useReducer
-  - ProjectSetup.tsx: Data input forms, CSV upload, validation
-  - SiteLayoutMap.tsx: Canvas-based site map with WTGs, masts, sectors
-  - TerrainResults.tsx: Polar plots, terrain profiles, sector tables
-  - PCVSelection.tsx: Pairing rankings, radar charts, configurations
-  - FreestreamAnalysis.tsx: Wake rose, sector breakdown
-  - ReportPreview.tsx: DNV-style report with print/PDF export
-- Fixed bug: variable name mismatch in freestream.ts (combinedImpact vs combinedWakeImpact)
-- Fixed synthetic terrain: replaced sinusoidal noise with proper value noise + FBM for realistic slopes (2-10%)
-- Verified all APIs return correct results with realistic terrain metrics
+- Read and analyzed 4 input files: Wind farm layout.csv (55 WTGs), Wind farm layout external.csv (43 external WTGs), Wind Data.csv (8753 records, Jan-Feb 2004), MAPFILES_240102_Pestera2_Rev 0_0.map (2481 contours, 45-145m elevation)
+- Identified coordinate system: EPSG:7755 (Romanian Stereo70) for WTG layouts, Stereo70 for .map file
+- Built comprehensive Python test script (test_pcv_real_data.py) that:
+  - Parses CSV files with UTM coordinates and converts to WGS84 lat/lon
+  - Parses WAsP .map terrain file (ISO-8859 encoding, contour-based elevation data)
+  - Generates 3 strategic mast position proposals for PCV testing
+  - Calls the Next.js /api/terrain endpoint with all data
+  - Generates comprehensive DNV-style PDF report using ReportLab
+- Successfully ran the full pipeline:
+  - 165 terrain assessments (3 masts × 55 WTGs)
+  - 3 freestream analyses
+  - 6 PCV configurations
+  - 20 mast location proposals
+  - 1 final measurement sector set
 
 Stage Summary:
-- Application fully functional end-to-end
-- All lint checks pass
-- API endpoints tested and working
-- Sample data produces realistic results (Class A terrain, 36-47% valid sectors, 6.4° max slope)
-- Supports: CSV upload, external wind farm layout, 1 mast → 2 WTGs, DNV-style PDF export
-- Professional color scheme (slate/emerald), print-optimized CSS
+- Analysis completed successfully - the tool CAN process the user's real input files
+- Generated files:
+  - /home/z/my-project/download/WTG_PCV_Assessment_Report_Pestera2.pdf (13-page DNV-style report)
+  - /home/z/my-project/download/pcv_raw_results.json (complete API response)
+- Key findings:
+  - Terrain classification: 110 Class A, 55 Class B (out of 165 assessments)
+  - Best PCV pairing score: 46.9/100 (initial mast positions inside farm)
+  - Engine's proposed mast candidates score up to 82/100 with 28 valid sectors
+  - Best final sectors: [0, 10, 20, 30, 40, 50, 320, 330, 340, 350] (27.8% coverage)
+  - Mean wind speed: 7.15 m/s, predominant direction: 275° (W)
+- Identified improvement: Initial mast positions were inside the dense farm; engine's proposed locations at 4D-8D from WTGs perform significantly better
