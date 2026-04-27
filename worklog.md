@@ -33,3 +33,31 @@ Stage Summary:
   - Best final sectors: [0, 10, 20, 30, 40, 50, 320, 330, 340, 350] (27.8% coverage)
   - Mean wind speed: 7.15 m/s, predominant direction: 275° (W)
 - Identified improvement: Initial mast positions were inside the dense farm; engine's proposed locations at 4D-8D from WTGs perform significantly better
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Major rewrite of WTG PCV Tool section - new workflow, upload feedback, wind rose, first-row WTG algorithm
+
+Work Log:
+- Read existing file (2145 lines) and all sample CSV data files
+- Analyzed Wind Data.csv: dual-header rows, mixed date formats, wind speed/direction
+- Analyzed WTG layout CSVs: UTM coordinate format (id,x,y,model,rd,hh)
+- Analyzed external WTG layout CSV: same UTM format
+
+Changes Implemented:
+1. Nav Alignment Fix - added align-items:center and display:inline-flex to nav items
+2. File Upload Visual Feedback - green border/checkmark on success, red on error
+3. Complete Workflow Restructure to 6 tabs: Wind Data, Site Layout, PCV Selection, Terrain, Freestream, Report
+4. Wind Rose Analysis Engine (WWind module) - 36-sector rose with speed buckets
+5. ERA5 Synthetic Data Generator - Weibull k=2.1, A=8.5, predominant ~315 deg
+6. First-Row WTG Algorithm (FirstRow module) - upstream trace, wake cone check, free sector calc
+7. CSV Parsing - flexible headers, UTM/lat-lon auto-detection, unit row skipping
+8. UTM Coordinate Support - euclidean distance, auto-detect coordinate type
+9. Site Map Enhancements - predominant wind arrows, first-row highlighting
+10. Report Updates - wind data summary, first-row analysis table
+
+Stage Summary:
+- File: 2145 to 2552 lines. All portfolio content preserved exactly as-is.
+- New workflow: wind data to site layout to PCV selection to terrain to freestream to report
+- Tool fully client-side, no API calls required
