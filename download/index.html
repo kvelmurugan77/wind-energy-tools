@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velmurugan Karuppiah — Wind Energy Expert</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#0b1f3a; --sky2:#0e3460; --sky3:#1a5f8a;
+  --sky4:#2d9cce; --sky5:#87ceeb;
+  --mint:#1db87e; --gold:#f0a500;
+  --white:#ffffff; --border:rgba(255,255,255,.12);
+  --display:'Playfair Display',Georgia,serif;
+  --body:'Open Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);color:var(--white);overflow-x:hidden;cursor:none;
+  background:linear-gradient(160deg,var(--sky1) 0%,var(--sky2) 40%,var(--sky3) 75%,#0a4a6e 100%);
+  min-height:100vh}
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35}
+
+/* CURSOR */
+.cur-d{position:fixed;top:0;left:0;width:10px;height:10px;background:var(--mint);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+.cur-r{position:fixed;top:0;left:0;width:38px;height:38px;border:1.5px solid var(--mint);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s;opacity:.55}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:800;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 3rem;transition:background .4s,border-color .4s;border-bottom:1px solid transparent}
+nav.scrolled{background:rgba(11,31,58,.88);backdrop-filter:blur(14px);border-color:var(--border)}
+.nav-logo{font-family:var(--display);font-size:1.3rem;font-style:italic;color:var(--mint);text-decoration:none}
+.nav-links{display:flex;gap:2.2rem;list-style:none}
+.nav-links a{font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.8);text-decoration:none;position:relative;padding-bottom:3px;transition:color .25s}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--mint);transition:width .3s}
+.nav-links a:hover{color:#fff}.nav-links a:hover::after{width:100%}
+.nav-cta{font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sky1);background:var(--mint);border:none;padding:.6rem 1.6rem;cursor:none;text-decoration:none;border-radius:4px;transition:background .25s,transform .2s,box-shadow .2s}
+.nav-cta:hover{background:var(--gold);transform:translateY(-2px);box-shadow:0 6px 20px rgba(240,165,0,.35)}
+
+/* HERO */
+#hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 30% 60%,rgba(45,156,206,.18) 0%,transparent 70%),radial-gradient(ellipse at 80% 20%,rgba(29,184,126,.1) 0%,transparent 60%)}
+.particles{position:absolute;inset:0;z-index:1;overflow:hidden}
+.p{position:absolute;border-radius:50%;background:rgba(255,255,255,.15);animation:floatP linear infinite}
+@keyframes floatP{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:.3}100%{transform:translateY(-10vh) scale(1.2);opacity:0}}
+
+.hero-left{position:relative;z-index:5;padding:9rem 3rem 5rem;display:flex;flex-direction:column;justify-content:center}
+.hero-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--mint);display:inline-flex;align-items:center;gap:.7rem;margin-bottom:1.8rem;opacity:0;animation:fadeUp .8s ease .2s forwards}
+.hero-eyebrow::before{content:'';display:inline-block;width:30px;height:2px;background:var(--mint)}
+h1.hero-name{font-family:var(--display);font-weight:400;font-size:clamp(2.8rem,5vw,5rem);line-height:1.05;color:#fff;margin-bottom:.5rem;opacity:0;animation:fadeUp .9s ease .35s forwards}
+h1.hero-name em{font-style:italic;color:var(--sky5)}
+.hero-role{font-size:.82rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1.8rem;opacity:0;animation:fadeUp .9s ease .5s forwards}
+.hero-desc{font-size:1.05rem;font-weight:300;line-height:1.85;color:rgba(255,255,255,.75);max-width:42ch;margin-bottom:2.8rem;opacity:0;animation:fadeUp .9s ease .65s forwards}
+.hero-ctas{display:flex;gap:1.2rem;flex-wrap:wrap;opacity:0;animation:fadeUp .9s ease .8s forwards}
+.btn-green{font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sky1);background:var(--mint);padding:.9rem 2.2rem;text-decoration:none;border-radius:4px;transition:background .25s,transform .2s,box-shadow .2s}
+.btn-green:hover{background:var(--gold);transform:translateY(-3px);box-shadow:0 8px 24px rgba(240,165,0,.35)}
+.btn-ghost{font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#fff;border:1.5px solid rgba(255,255,255,.4);padding:.9rem 2.2rem;text-decoration:none;border-radius:4px;transition:all .25s}
+.btn-ghost:hover{border-color:var(--mint);color:var(--mint);background:rgba(29,184,126,.1)}
+
+/* HERO RIGHT — turbine fills the panel */
+.hero-right{position:relative;z-index:5;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hero-right svg{width:100%;height:100%;display:block}
+
+/* Blade spin — rotates around hub point */
+@keyframes rotateBlade{to{transform:rotate(360deg)}}
+/* Sweep ring radar */
+@keyframes sweepRadar{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes beamPulse{0%,100%{opacity:.55}50%{opacity:.85}}
+
+/* HERO STATS */
+.hero-stats-bar{position:absolute;bottom:0;left:0;right:0;z-index:6;background:rgba(11,31,58,.7);backdrop-filter:blur(10px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;opacity:0;animation:fadeUp 1s ease 1s forwards}
+.hstat{flex:1;text-align:center;padding:1.3rem 1rem;border-right:1px solid var(--border)}
+.hstat:last-child{border-right:none}
+.hstat-n{display:block;font-family:var(--display);font-size:2.2rem;font-style:italic;color:var(--mint);line-height:1}
+.hstat-l{display:block;font-size:.62rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:.3rem}
+
+/* SECTION COMMONS */
+.section-wrap{position:relative;padding:8rem 0}
+.container{max-width:1200px;margin:0 auto;padding:0 3rem}
+.eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--mint);display:inline-flex;align-items:center;gap:.7rem;margin-bottom:.9rem}
+.eyebrow::before{content:'';display:block;width:24px;height:2px;background:var(--mint)}
+.eyebrow.gold{color:var(--gold)}.eyebrow.gold::before{background:var(--gold)}
+.stitle{font-family:var(--display);font-weight:400;font-size:clamp(2rem,4vw,3.2rem);line-height:1.15;color:#fff}
+.stitle em{font-style:italic;color:var(--sky5)}
+.rv{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:translateY(0)}
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}.rv.d4{transition-delay:.4s}
+
+/* ABOUT */
+#about{background:linear-gradient(180deg,rgba(11,31,58,0) 0%,rgba(8,20,40,.95) 100%);position:relative}
+#about::before{content:'';position:absolute;inset:0;z-index:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600'%3E%3Ccircle cx='900' cy='100' r='300' fill='none' stroke='rgba(45,156,206,0.05)' stroke-width='1'/%3E%3Ccircle cx='900' cy='100' r='220' fill='none' stroke='rgba(45,156,206,0.07)' stroke-width='1'/%3E%3Ccircle cx='900' cy='100' r='140' fill='none' stroke='rgba(45,156,206,0.09)' stroke-width='1'/%3E%3C/svg%3E") right center/800px no-repeat}
+.about-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:6rem;align-items:start;position:relative;z-index:1}
+.about-bio{font-size:1.02rem;font-weight:300;line-height:1.9;color:rgba(255,255,255,.72);margin-top:2rem}
+.about-bio strong{color:var(--mint);font-weight:600}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-top:2.5rem;border:1px solid var(--border)}
+.metric{padding:1.7rem;background:rgba(11,31,58,.8);transition:background .3s}
+.metric:hover{background:rgba(29,184,126,.1)}
+.metric-n{display:block;font-family:var(--display);font-size:2.6rem;font-style:italic;color:var(--mint);line-height:1}
+.metric-l{display:block;font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-top:.4rem}
+.ecards{display:flex;flex-direction:column;gap:1px}
+.ecard{background:rgba(255,255,255,.05);border:1px solid var(--border);padding:1.6rem;display:flex;gap:1.4rem;align-items:flex-start;transition:background .3s,border-color .3s;position:relative;overflow:hidden}
+.ecard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .3s}
+.ecard:hover{background:rgba(29,184,126,.08);border-color:rgba(29,184,126,.3)}
+.ecard:hover::before{background:var(--mint)}
+.ecard-icon-wrap{width:52px;height:52px;flex-shrink:0;background:rgba(45,156,206,.12);border:1px solid rgba(45,156,206,.2);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.ecard h3{font-size:.88rem;font-weight:700;color:#fff;margin-bottom:.3rem;letter-spacing:.03em}
+.ecard p{font-size:.83rem;font-weight:300;color:rgba(255,255,255,.52);line-height:1.65}
+
+/* EXPERIENCE */
+#experience{background:rgba(8,18,38,.85);position:relative}
+#experience::before{content:'';position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 0% 50%,rgba(29,184,126,.06) 0%,transparent 60%)}
+.exp-header{display:grid;grid-template-columns:1fr 1.8fr;gap:5rem;margin-bottom:5rem;align-items:end;position:relative;z-index:1}
+.exp-intro-text{font-size:1rem;font-weight:300;line-height:1.85;color:rgba(255,255,255,.6)}
+.tl{position:relative;z-index:1}
+.tl::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--mint),rgba(29,184,126,.1))}
+.tli{display:grid;grid-template-columns:200px 1fr;gap:3rem;padding:3rem 0;border-bottom:1px solid var(--border);position:relative}
+.tli::before{content:'';position:absolute;left:-6px;top:3.6rem;width:12px;height:12px;border-radius:50%;background:var(--sky1);border:2px solid var(--border);transition:background .3s,border-color .3s,box-shadow .3s}
+.tli:hover::before{background:var(--mint);border-color:var(--mint);box-shadow:0 0 12px rgba(29,184,126,.4)}
+.tli-period{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);margin-bottom:.5rem;display:block}
+.tli-company{font-size:.9rem;font-weight:700;color:#fff;margin-bottom:.25rem}
+.tli-loc{font-size:.65rem;color:rgba(255,255,255,.38);letter-spacing:.1em}
+.tli-content h3{font-family:var(--display);font-size:1.35rem;font-weight:400;font-style:italic;color:#fff;margin-bottom:.7rem}
+.tli-content p{font-size:.88rem;line-height:1.82;color:rgba(255,255,255,.58);font-weight:300;margin-bottom:.8rem}
+.tli-achv{list-style:none;margin-top:.8rem}
+.tli-achv li{font-size:.78rem;color:var(--mint);padding:.35rem 0;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:.6rem;font-weight:600}
+.tli-achv li::before{content:'▸';flex-shrink:0}
+.tl-tag{display:inline-block;font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:rgba(45,156,206,.12);color:rgba(255,255,255,.5);padding:.22rem .65rem;margin:.2rem .15rem .2rem 0;border:1px solid rgba(45,156,206,.2);border-radius:3px}
+
+/* PROJECTS */
+#projects{position:relative;background:linear-gradient(180deg,rgba(8,18,38,.9) 0%,rgba(10,25,50,.95) 100%)}
+#projects::before{content:'';position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 80% 20%,rgba(240,165,0,.05) 0%,transparent 50%),radial-gradient(ellipse at 20% 80%,rgba(29,184,126,.06) 0%,transparent 50%)}
+.proj-hdr{display:grid;grid-template-columns:1fr 1fr;gap:5rem;margin-bottom:5rem;align-items:end;position:relative;z-index:1}
+.pgrid{display:grid;grid-template-columns:1.15fr 1fr;gap:1.5rem;position:relative;z-index:1}
+.pcard{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:2.8rem;position:relative;overflow:hidden;transition:background .35s,border-color .35s,transform .3s}
+.pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--mint),var(--sky4));opacity:0;transition:opacity .3s}
+.pcard:hover{background:rgba(29,184,126,.07);border-color:rgba(29,184,126,.3);transform:translateY(-4px)}
+.pcard:hover::before{opacity:1}
+.pcard--w{grid-column:1/-1}
+.pnum{font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--sky4);margin-bottom:1.2rem;display:block}
+.pcard-icon{font-size:2.5rem;margin-bottom:1.2rem;display:block}
+.ptitle{font-family:var(--display);font-size:1.45rem;font-weight:400;font-style:italic;color:#fff;margin-bottom:.85rem;line-height:1.25}
+.pdesc{font-size:.87rem;line-height:1.8;color:rgba(255,255,255,.55);font-weight:300;margin-bottom:1.6rem}
+.pstats{display:flex;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.pstat-n{display:block;font-family:var(--display);font-size:1.85rem;font-style:italic;color:var(--mint);line-height:1}
+.pstat-l{display:block;font-size:.58rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-top:.3rem}
+.ptags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.5rem}
+.ptag{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(45,156,206,.1);color:rgba(255,255,255,.5);padding:.22rem .65rem;border:1px solid rgba(45,156,206,.2);border-radius:3px}
+.pbadge{display:inline-flex;align-items:center;gap:.5rem;font-size:.68rem;font-weight:600;color:var(--mint)}
+.pbadge::before{content:'→'}
+
+/* SKILLS */
+#skills{background:rgba(8,18,38,.92);position:relative}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:4rem;position:relative;z-index:1}
+.sgroup{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:2.4rem;transition:background .3s,border-color .3s,transform .3s}
+.sgroup:hover{background:rgba(29,184,126,.07);border-color:rgba(29,184,126,.25);transform:translateY(-3px)}
+.sg-icon-wrap{width:60px;height:60px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1.3rem;background:linear-gradient(135deg,rgba(45,156,206,.15),rgba(29,184,126,.1));border:1px solid rgba(45,156,206,.2)}
+.sgroup h3{font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin-bottom:1.2rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+.slist{list-style:none}
+.slist li{font-size:.8rem;font-weight:300;color:rgba(255,255,255,.6);padding:.38rem 0;display:flex;gap:.7rem;align-items:center}
+.slist li::before{content:'';display:block;width:5px;height:5px;background:var(--mint);border-radius:50%;flex-shrink:0}
+.cert-strip{margin-top:3rem;position:relative;z-index:1;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:2.4rem;display:grid;grid-template-columns:auto 1fr;gap:2.5rem;align-items:center}
+.cert-v-label{font-size:.62rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);writing-mode:vertical-rl;transform:rotate(180deg)}
+.cbadges{display:flex;flex-wrap:wrap;gap:.9rem}
+.cbadge{font-size:.72rem;font-weight:600;letter-spacing:.08em;border:1px solid rgba(45,156,206,.25);color:rgba(255,255,255,.65);padding:.6rem 1.1rem;border-radius:6px;background:rgba(45,156,206,.06);transition:background .3s,border-color .3s,color .3s}
+.cbadge:hover{background:rgba(29,184,126,.15);border-color:rgba(29,184,126,.4);color:var(--mint)}
+.award-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem;position:relative;z-index:1}
+.acard{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:2rem;transition:background .3s,border-color .3s}
+.acard:hover{background:rgba(240,165,0,.08);border-color:rgba(240,165,0,.25)}
+.ayear{font-size:.65rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.5rem}
+.atitle{font-family:var(--display);font-size:1.1rem;font-style:italic;color:#fff;line-height:1.3;margin-bottom:.4rem}
+.aorg{font-size:.72rem;color:rgba(255,255,255,.38);letter-spacing:.07em}
+
+/* EDUCATION */
+#education{background:linear-gradient(180deg,rgba(8,18,38,.9) 0%,rgba(11,31,58,.95) 100%);position:relative}
+.edu-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:4rem}
+.ecard2{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:2.8rem;transition:background .3s,border-color .3s}
+.ecard2:hover{background:rgba(45,156,206,.07);border-color:rgba(45,156,206,.3)}
+.edeg{font-size:.65rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--sky4);margin-bottom:.7rem;display:block}
+.ename{font-family:var(--display);font-size:1.5rem;font-style:italic;color:#fff;margin-bottom:.35rem}
+.euni{font-size:.82rem;font-weight:700;letter-spacing:.08em;color:var(--mint);margin-bottom:.5rem}
+.eperiod{font-size:.65rem;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:.9rem;display:block}
+.edetail{font-size:.87rem;line-height:1.78;color:rgba(255,255,255,.5);font-weight:300}
+
+/* CONTACT */
+#contact{background:rgba(8,18,38,.95);position:relative}
+#contact::before{content:'';position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 50% 100%,rgba(29,184,126,.08) 0%,transparent 60%)}
+.contact-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:6rem;align-items:start;position:relative;z-index:1}
+.contact-tagline{font-family:var(--display);font-size:clamp(1.9rem,3.5vw,3rem);font-weight:400;font-style:italic;line-height:1.2;margin-bottom:1.6rem;color:#fff}
+.contact-tagline em{color:var(--mint);font-style:normal}
+.contact-intro{font-size:.95rem;font-weight:300;line-height:1.85;color:rgba(255,255,255,.6);max-width:40ch;margin-bottom:2.5rem}
+.clinks{display:flex;flex-direction:column}
+.clink{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:#fff;transition:padding-left .25s}
+.clink:hover{padding-left:.6rem}
+.clink:hover .cl-arrow{color:var(--mint)}
+.cl-l{display:flex;gap:.9rem;align-items:center}
+.cl-ico-wrap{width:38px;height:38px;border-radius:8px;background:rgba(29,184,126,.1);border:1px solid rgba(29,184,126,.2);display:flex;align-items:center;justify-content:center;font-size:1rem}
+.cl-label{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.38);display:block}
+.cl-val{font-size:.92rem;color:#fff;display:block;margin-top:.1rem}
+.cl-arrow{font-size:1rem;color:rgba(255,255,255,.2);transition:color .25s}
+.form-panel{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:2.5rem}
+.form-panel h3{font-size:.78rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#fff;margin-bottom:1.8rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.fgrp{margin-bottom:1.3rem}
+.fgrp label{display:block;font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.45rem}
+.fgrp input,.fgrp textarea,.fgrp select{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;font-family:var(--body);font-size:.92rem;color:#fff;padding:.8rem 1rem;outline:none;transition:border-color .25s,background .25s;appearance:none}
+.fgrp input::placeholder,.fgrp textarea::placeholder{color:rgba(255,255,255,.25)}
+.fgrp input:focus,.fgrp textarea:focus,.fgrp select:focus{border-color:var(--mint);background:rgba(29,184,126,.05)}
+.fgrp select option{background:var(--sky1);color:#fff}
+.fgrp textarea{resize:vertical;min-height:110px}
+.fsub{width:100%;font-family:var(--body);font-size:.75rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;background:var(--mint);color:var(--sky1);border:none;padding:1rem;cursor:none;border-radius:6px;transition:background .25s,transform .2s,box-shadow .2s}
+.fsub:hover{background:var(--gold);transform:translateY(-2px);box-shadow:0 6px 20px rgba(240,165,0,.3)}
+.form-note{font-size:.7rem;color:rgba(255,255,255,.3);margin-top:.8rem;text-align:center;font-weight:300}
+
+/* FOOTER */
+footer{background:rgba(6,14,30,.95);color:#fff;padding:2.2rem 3rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
+.foot-logo{font-family:var(--display);font-size:1rem;font-style:italic;color:var(--mint)}
+.foot-copy{font-size:.65rem;font-weight:300;letter-spacing:.1em;color:rgba(255,255,255,.25)}
+.foot-top{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);text-decoration:none;transition:color .25s}
+.foot-top:hover{color:var(--mint)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:1.1rem 1.5rem}.nav-links{display:none}
+  #hero{grid-template-columns:1fr}.hero-right{height:60vw}
+  .hero-left{padding:7rem 1.5rem 3rem}
+  .about-grid,.exp-header,.proj-hdr,.contact-grid{grid-template-columns:1fr;gap:2.5rem}
+  .pgrid{grid-template-columns:1fr}.pcard--w{grid-column:auto}
+  .sgrid{grid-template-columns:1fr 1fr}.award-grid{grid-template-columns:1fr}
+  .edu-grid{grid-template-columns:1fr}.tli{grid-template-columns:1fr;gap:.7rem}
+  .container{padding:0 1.4rem}
+  footer{flex-direction:column;gap:1rem;text-align:center}
+  .cert-strip{grid-template-columns:1fr}.cert-v-label{writing-mode:horizontal-tb;transform:none}
+  .hero-stats-bar{display:none}
+  .tool-tabs{flex-wrap:wrap;gap:.2rem}
+  .tool-grid-2col{grid-template-columns:1fr!important}
+}
+
+/* ── TOOLS SECTION ─────────────────────────────────────── */
+#tools{background:linear-gradient(180deg,rgba(8,18,38,.9) 0%,rgba(10,20,42,.97) 100%);position:relative}
+#tools::before{content:'';position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 30% 30%,rgba(29,184,126,.05) 0%,transparent 60%)}
+.tool-tabs{display:flex;gap:.3rem;margin-top:2.5rem;position:relative;z-index:1;border-bottom:1px solid var(--border);padding-bottom:0}
+.tool-tab{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:.7rem 1.2rem;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:color .25s,border-color .25s;font-family:var(--body)}
+.tool-tab:hover{color:rgba(255,255,255,.7)}
+.tool-tab.active{color:var(--mint);border-bottom-color:var(--mint)}
+.tool-panel{display:none;padding:2.5rem 0 1rem;position:relative;z-index:1}
+.tool-panel.active{display:block}
+.tool-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:1.5rem;transition:border-color .3s}
+.tool-card:hover{border-color:rgba(29,184,126,.3)}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.tool-grid-3col{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.tool-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:2rem}
+.tool-metric{padding:1.3rem;background:rgba(11,31,58,.8);text-align:center}
+.tool-metric-n{display:block;font-family:var(--display);font-size:2rem;font-style:italic;color:var(--mint);line-height:1}
+.tool-metric-l{display:block;font-size:.58rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-top:.3rem}
+.tool-metric-n.warn{color:var(--gold)}.tool-metric-n.bad{color:#e74c3c}
+.tool-btn{font-family:var(--body);font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:var(--mint);color:var(--sky1);border:none;padding:.75rem 1.8rem;border-radius:6px;cursor:pointer;transition:background .25s,transform .2s,box-shadow .2s;display:inline-flex;align-items:center;gap:.5rem}
+.tool-btn:hover{background:var(--gold);transform:translateY(-2px);box-shadow:0 6px 20px rgba(240,165,0,.3)}
+.tool-btn-ghost{font-family:var(--body);font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:none;color:rgba(255,255,255,.7);border:1.5px solid var(--border);padding:.7rem 1.6rem;border-radius:6px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:.5rem}
+.tool-btn-ghost:hover{border-color:var(--mint);color:var(--mint)}
+.tool-btn-sm{padding:.5rem 1rem;font-size:.62rem}
+.tool-select,.tool-input{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;font-family:var(--body);font-size:.85rem;color:#fff;padding:.6rem .8rem;outline:none;transition:border-color .25s;width:100%;appearance:none}
+.tool-select:focus,.tool-input:focus{border-color:var(--mint)}
+.tool-select option{background:var(--sky1);color:#fff}
+.tool-label{display:block;font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.35rem}
+.tool-fgroup{margin-bottom:1rem}
+.tool-upload{border:2px dashed var(--border);border-radius:10px;padding:1.8rem;text-align:center;cursor:pointer;transition:border-color .3s,background .3s;background:rgba(255,255,255,.02)}
+.tool-upload:hover{border-color:var(--mint);background:rgba(29,184,126,.04)}
+.tool-upload input{display:none}
+.tool-upload-icon{font-size:1.6rem;margin-bottom:.5rem;display:block;opacity:.5}
+.tool-upload-text{font-size:.82rem;color:rgba(255,255,255,.5);font-weight:300}
+.tool-upload-hint{font-size:.62rem;color:rgba(255,255,255,.25);margin-top:.3rem}
+.tool-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.tool-table th{text-align:left;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:.7rem .8rem;border-bottom:1px solid var(--border);white-space:nowrap}
+.tool-table td{padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-weight:300}
+.tool-table tr:hover td{background:rgba(29,184,126,.04)}
+.tool-table-scroll{max-height:360px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
+.tool-badge{display:inline-block;font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .6rem;border-radius:4px}
+.tool-badge.valid{background:rgba(29,184,126,.15);color:var(--mint);border:1px solid rgba(29,184,126,.3)}
+.tool-badge.invalid{background:rgba(231,76,60,.15);color:#e74c3c;border:1px solid rgba(231,76,60,.3)}
+.tool-badge.warn{background:rgba(240,165,0,.15);color:var(--gold);border:1px solid rgba(240,165,0,.3)}
+.tool-badge.free{background:rgba(45,156,206,.15);color:var(--sky4);border:1px solid rgba(45,156,206,.3)}
+.tool-canvas-wrap{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative}
+.tool-canvas-wrap canvas{display:block;width:100%;height:auto}
+.tool-loading{position:absolute;inset:0;background:rgba(11,31,58,.85);display:flex;align-items:center;justify-content:center;z-index:10;border-radius:10px;backdrop-filter:blur(4px)}
+.tool-loading-text{font-size:.8rem;color:var(--mint);font-weight:600;letter-spacing:.1em;animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+.tool-progress{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:.5rem}
+.tool-progress-bar{height:100%;border-radius:2px;transition:width .5s}
+.tool-alert{padding:1rem 1.2rem;border-radius:8px;font-size:.82rem;line-height:1.6;margin-bottom:1rem;border-left:3px solid}
+.tool-alert.info{background:rgba(45,156,206,.08);border-color:var(--sky4);color:rgba(255,255,255,.7)}
+.tool-alert.success{background:rgba(29,184,126,.08);border-color:var(--mint);color:rgba(255,255,255,.7)}
+.tool-alert.error{background:rgba(231,76,60,.08);border-color:#e74c3c;color:rgba(255,255,255,.7)}
+.tool-alert.warning{background:rgba(240,165,0,.08);border-color:var(--gold);color:rgba(255,255,255,.7)}
+.tool-section-title{font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
+.tool-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.tool-row{display:flex;gap:1.5rem;align-items:stretch;flex-wrap:wrap}
+.tool-col{flex:1;min-width:280px}
+.tool-score-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:.3rem}
+.tool-score-fill{height:100%;border-radius:3px;transition:width .6s}
+.tool-report{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:2.5rem;max-height:600px;overflow-y:auto}
+.tool-report h3{font-family:var(--display);font-size:1.2rem;font-style:italic;color:#fff;margin:1.5rem 0 .8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.tool-report h3:first-child{margin-top:0}
+.tool-report p,.tool-report li{font-size:.82rem;line-height:1.7;color:rgba(255,255,255,.6);font-weight:300}
+.tool-report table{width:100%;border-collapse:collapse;margin:.8rem 0;font-size:.78rem}
+.tool-report th{background:rgba(29,184,126,.1);font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);padding:.5rem .6rem;text-align:left;border:1px solid var(--border)}
+.tool-report td{padding:.4rem .6rem;border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.65);font-weight:300}
+.tool-data-row{display:flex;gap:.5rem;align-items:center;justify-content:space-between;padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.tool-data-row:hover{background:rgba(29,184,126,.03)}
+.tool-remove{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:.9rem;opacity:.5;transition:opacity .2s;padding:.2rem .4rem}
+.tool-remove:hover{opacity:1}
+@media(max-width:900px){
+  .tool-metrics{grid-template-columns:repeat(2,1fr)}
+  .tool-grid-3col{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .tool-grid{grid-template-columns:1fr!important}
+  .tool-grid-3col{grid-template-columns:1fr!important}
+  .tool-metrics{grid-template-columns:1fr 1fr}
+  .tool-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div class="cur-d" id="cd"></div>
+<div class="cur-r" id="cr"></div>
+<canvas id="bgCanvas"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-logo" href="#">VK</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Innovations</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a class="nav-cta" href="#contact">Contact</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="hero-left">
+    <div class="hero-eyebrow">Wind Energy Expert &middot; 14+ Years</div>
+    <h1 class="hero-name">Velmurugan<br><em>Karuppiah</em></h1>
+    <p class="hero-role">WTG Procurement &amp; Wind Resource Specialist</p>
+    <p class="hero-desc">Driving measurable impact across five continents &mdash; from India&rsquo;s first nacelle-mounted LiDAR to 1+ GW of procurement across Portugal and Japan.</p>
+    <div class="hero-ctas">
+      <a class="btn-green" href="#experience">Explore Career</a>
+      <a class="btn-ghost" href="#contact">Get in Touch</a>
+    </div>
+  </div>
+
+    <div class="hero-right" id="heroRight">
+    <canvas id="wtgCanvas" style="width:100%;height:100%;display:block;"></canvas>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="hero-stats-bar">
+    <div class="hstat"><span class="hstat-n">1+ GW</span><span class="hstat-l">Managed</span></div>
+    <div class="hstat"><span class="hstat-n">14+</span><span class="hstat-l">Years</span></div>
+    <div class="hstat"><span class="hstat-n">30+</span><span class="hstat-l">Countries</span></div>
+    <div class="hstat"><span class="hstat-n">6</span><span class="hstat-l">Industry Leaders</span></div>
+    <div class="hstat"><span class="hstat-n">3×</span><span class="hstat-l">Award Winner</span></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="section-wrap">
+  <div class="container">
+    <div class="about-grid">
+      <div class="rv">
+        <div class="eyebrow">About Me</div>
+        <h2 class="stitle">Turning Wind<br>into <em>Measurable</em><br>Energy</h2>
+        <p class="about-bio">Wind energy professional with <strong>14+ years</strong> across the full project lifecycle — from early-stage resource assessment to complex WTG procurement and operational performance optimisation.<br><br>Currently with <strong>Blue Power Partners</strong>, orchestrating multi-continent WTG procurement programmes across Europe and Asia, with <strong>1 GW+ of active portfolios</strong> under management. Previously with Envision Energy, Vestas, SunEdison, MeteoPole, and SgurrEnergy.</p>
+        <div class="metrics">
+          <div class="metric rv d1"><span class="metric-n">1+ GW</span><span class="metric-l">Wind Projects Managed</span></div>
+          <div class="metric rv d2"><span class="metric-n">800 MW</span><span class="metric-l">Portugal Portfolio</span></div>
+          <div class="metric rv d3"><span class="metric-n">200 MW</span><span class="metric-l">Japan Portfolio</span></div>
+          <div class="metric rv d4"><span class="metric-n">500 MW</span><span class="metric-l">Pipeline @ Envision</span></div>
+        </div>
+      </div>
+
+      <div class="ecards rv d2">
+        <!-- 1. WRA: Anemometer on met mast — the primary WRA instrument -->
+        <div class="ecard">
+          <div class="ecard-icon-wrap">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <!-- Met mast vertical pole -->
+              <line x1="16" y1="31" x2="16" y2="9" stroke="#2d9cce" stroke-width="2.2" stroke-linecap="round"/>
+              <!-- Crossarm -->
+              <line x1="9" y1="15" x2="23" y2="15" stroke="#2d9cce" stroke-width="1.8" stroke-linecap="round"/>
+              <!-- 3 cup anemometer bowls (circles at each arm tip and top) -->
+              <circle cx="9"  cy="15" r="4.5" fill="#1db87e" opacity=".9"/>
+              <circle cx="9"  cy="15" r="2.2" fill="#0a2840"/>
+              <circle cx="23" cy="15" r="4.5" fill="#1db87e" opacity=".9"/>
+              <circle cx="23" cy="15" r="2.2" fill="#0a2840"/>
+              <circle cx="16" cy="9"  r="4.5" fill="#1db87e" opacity=".9"/>
+              <circle cx="16" cy="9"  r="2.2" fill="#0a2840"/>
+              <!-- Wind arrows sweeping from left -->
+              <path d="M2 23 Q5 21 8 23" stroke="#87ceeb" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+              <path d="M2 26 Q6 24 9 26" stroke="#87ceeb" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <!-- Base plate -->
+              <line x1="12" y1="31" x2="20" y2="31" stroke="#2d9cce" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div><h3>Wind Resource Assessment</h3><p>Advanced WRA, measurement campaign design, WAsP &amp; WindPro modelling, Energy Yield Assessment, losses and uncertainty estimation.</p></div>
+        </div>
+
+        <!-- 2. WTG Procurement: Wind turbine silhouette + contract tick -->
+        <div class="ecard">
+          <div class="ecard-icon-wrap">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <!-- Turbine tower -->
+              <line x1="16" y1="31" x2="16" y2="19" stroke="#2d9cce" stroke-width="2.2" stroke-linecap="round"/>
+              <!-- Hub -->
+              <circle cx="16" cy="18" r="3.5" fill="#cceeff"/>
+              <circle cx="16" cy="18" r="1.8" fill="#1db87e"/>
+              <!-- 3 blades -->
+              <line x1="16" y1="18" x2="16" y2="7"   stroke="#e0f6ff" stroke-width="3"   stroke-linecap="round"/>
+              <line x1="16" y1="18" x2="7"  y2="23.5" stroke="#e0f6ff" stroke-width="3"  stroke-linecap="round"/>
+              <line x1="16" y1="18" x2="25" y2="23.5" stroke="#c8ecf8" stroke-width="3"  stroke-linecap="round"/>
+              <!-- Contract / approved badge (bottom right) -->
+              <circle cx="25" cy="25" r="6.5" fill="#0a2840" stroke="#1db87e" stroke-width="1.8"/>
+              <path d="M22 25 l2.2 2.2 3.5-3.5" stroke="#1db87e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div><h3>WTG Procurement &amp; TSA</h3><p>Full procurement cycle — RFI/ITT preparation, binding offer review, TSA negotiation and exhibit preparation across multi-GW portfolios.</p></div>
+        </div>
+
+        <!-- 3. LiDAR: Nacelle (horizontal box) + downward cyan beam, exactly like turbine hero -->
+        <div class="ecard">
+          <div class="ecard-icon-wrap">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <!-- Nacelle horizontal body -->
+              <rect x="11" y="11" width="16" height="9" rx="3.5" fill="#8ed4f0" opacity=".92"/>
+              <rect x="11" y="11" width="16" height="5" rx="3.5" fill="rgba(255,255,255,.32)"/>
+              <!-- Hub: green emitter dot on left of nacelle -->
+              <circle cx="13" cy="15.5" r="4.5" fill="#cceeff"/>
+              <circle cx="13" cy="15.5" r="2.8" fill="#88d4f0"/>
+              <circle cx="13" cy="15.5" r="1.5" fill="#1db87e"/>
+              <circle cx="13" cy="15.5" r=".7" fill="#4dffc0"/>
+              <!-- LiDAR beam going down from hub -->
+              <line x1="13" y1="20" x2="13" y2="29" stroke="#50e0ff" stroke-width="4.5" stroke-linecap="round" opacity=".85"/>
+              <line x1="11" y1="23" x2="11" y2="29" stroke="#50e0ff" stroke-width="1.5" stroke-linecap="round" opacity=".3"/>
+              <line x1="15" y1="23" x2="15" y2="29" stroke="#50e0ff" stroke-width="1.5" stroke-linecap="round" opacity=".3"/>
+              <!-- Ground glow at base of beam -->
+              <ellipse cx="13" cy="29" rx="7" ry="2.2" fill="#1db87e" opacity=".45"/>
+            </svg>
+          </div>
+          <div><h3>LiDAR &amp; Power Curve Testing</h3><p>Nacelle-mounted &amp; ground-based LiDAR, yaw error correction, IEC 61400-12-1 power curve testing, SCADA data analysis.</p></div>
+        </div>
+
+        <!-- 4. Asset Performance: 3-turbine wind farm + rising performance graph -->
+        <div class="ecard">
+          <div class="ecard-icon-wrap">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <!-- 3 turbines -->
+              <line x1="7"  y1="30" x2="7"  y2="21" stroke="#2d9cce" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="16" y1="30" x2="16" y2="18" stroke="#2d9cce" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="25" y1="30" x2="25" y2="21" stroke="#2d9cce" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="7"  y1="21" x2="7"  y2="15" stroke="#e0f6ff" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="7"  y1="21" x2="3"  y2="24.5" stroke="#e0f6ff" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="7"  y1="21" x2="11" y2="24.5" stroke="#c8ecf8" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="16" y1="18" x2="16" y2="11" stroke="#e0f6ff" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="16" y1="18" x2="11" y2="22.5" stroke="#e0f6ff" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="16" y1="18" x2="21" y2="22.5" stroke="#c8ecf8" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="25" y1="21" x2="25" y2="15" stroke="#e0f6ff" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="25" y1="21" x2="21" y2="24.5" stroke="#e0f6ff" stroke-width="2.2" stroke-linecap="round"/>
+              <line x1="25" y1="21" x2="29" y2="24.5" stroke="#c8ecf8" stroke-width="2.2" stroke-linecap="round"/>
+              <!-- Rising performance arrow -->
+              <path d="M3 13 L9 9.5 L18 11.5 L29 5" stroke="#1db87e" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M26 5 L29 5 L29 8" stroke="#1db87e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div><h3>Asset Performance Optimisation</h3><p>Performance reconciliation, aerodynamic upgrades, power uprate, extended cut-out, life extension across 2+ GW of operational assets.</p></div>
+        </div>
+
+        <!-- 5. International Reach: Globe with location pins -->
+        <div class="ecard">
+          <div class="ecard-icon-wrap">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="13" stroke="#2d9cce" stroke-width="1.8"/>
+              <!-- Latitude lines -->
+              <path d="M3.5 11 Q16 8 28.5 11" stroke="#87ceeb" stroke-width=".9" fill="none" opacity=".55"/>
+              <line x1="3" y1="16" x2="29" y2="16" stroke="#87ceeb" stroke-width=".9" opacity=".55"/>
+              <path d="M3.5 21 Q16 24 28.5 21" stroke="#87ceeb" stroke-width=".9" fill="none" opacity=".55"/>
+              <!-- Central meridian -->
+              <ellipse cx="16" cy="16" rx="5.5" ry="13" stroke="#1db87e" stroke-width="1.1"/>
+              <!-- Location pins: India, Europe, Japan -->
+              <circle cx="20" cy="18" r="2.5" fill="#1db87e"/>
+              <circle cx="20" cy="18" r="1.2" fill="#4dffc0"/>
+              <circle cx="11" cy="11" r="2.2" fill="#1db87e"/>
+              <circle cx="11" cy="11" r="1"   fill="#4dffc0"/>
+              <circle cx="23" cy="12" r="1.8" fill="#87ceeb"/>
+            </svg>
+          </div>
+          <div><h3>International Market Reach</h3><p>Active in 30+ countries across India, Southeast Asia, Europe and Japan. Multi-OEM and lender engagement experience.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience" class="section-wrap">
+  <div class="container">
+    <div class="exp-header">
+      <div class="rv">
+        <div class="eyebrow">Career</div>
+        <h2 class="stitle">Professional<br><em>Journey</em></h2>
+      </div>
+      <p class="exp-intro-text rv d2">14 years across six organisations — from graduate site engineer to development consultant — building progressively deeper expertise in wind resource assessment, WTG procurement, and asset performance.</p>
+    </div>
+    <div class="tl">
+      <div class="tli rv">
+        <div class="tli-meta"><span class="tli-period">May 2020 — Present</span><div class="tli-company">Blue Power Partners</div><div class="tli-loc">Europe · Asia</div></div>
+        <div class="tli-content">
+          <h3>Development Consultant</h3>
+          <p>Leading WTG procurement for a 1+ GW multi-continent portfolio. Full procurement cycle — RFI/ITT preparation, binding offer review, TSA and exhibit preparation and negotiation. WRA support from site hunt, measurement campaign design, wind flow modelling, losses and uncertainty estimation. Coordinates independent EYA and power curve verification site assessments.</p>
+          <ul class="tli-achv"><li>WTG procurement — 800 MW Portugal + 200 MW Japan portfolios</li><li>Technical due diligence on 800 MW early-stage development portfolio in Portugal</li><li>Coordination across international consultants, OEMs and lenders</li></ul>
+          <div style="margin-top:.8rem"><span class="tl-tag">TSA Procurement</span><span class="tl-tag">WTG Procurement</span><span class="tl-tag">EYA</span><span class="tl-tag">Due Diligence</span><span class="tl-tag">PCV Assessment</span></div>
+        </div>
+      </div>
+      <div class="tli rv">
+        <div class="tli-meta"><span class="tli-period">Jan 2018 — May 2020</span><div class="tli-company">Envision Energy</div><div class="tli-loc">Asia — 12+ Countries</div></div>
+        <div class="tli-content">
+          <h3>Wind Resource Specialist</h3>
+          <p>Led WRA and Energy Yield Assessment across Asia, establishing technical standards. Designed and managed measurement campaigns across 12+ locations. Supported TSA contract signing and customer/third-party engagement. Designed power curve test plans and performance monitoring programmes.</p>
+          <ul class="tli-achv"><li>Built renewable energy pipeline of 500 MW across Asia</li><li>Outperformer of the Year 2018 — Solution Engineering team</li></ul>
+          <div style="margin-top:.8rem"><span class="tl-tag">WRA</span><span class="tl-tag">EYA</span><span class="tl-tag">Measurement Campaigns</span><span class="tl-tag">Load Assessment</span><span class="tl-tag">Power Curve Testing</span></div>
+        </div>
+      </div>
+      <div class="tli rv">
+        <div class="tli-meta"><span class="tli-period">Aug 2016 — Jan 2018</span><div class="tli-company">Vestas</div><div class="tli-loc">India</div></div>
+        <div class="tli-content">
+          <h3>After-Sales Wind &amp; Site Engineer</h3>
+          <p>Reconciled wind farm performance against pre-sales estimates, identified root causes of performance deterrents. Implemented aerodynamic upgrades, power uprate, and extended cut-out. Conducted WRA, SCADA data analysis, alarm analysis, and wind sector management revision.</p>
+          <ul class="tli-achv"><li>Asset optimisation for 2+ GW operational wind farm portfolio</li><li>Refurbishment project management for 400+ MW</li><li>Life extension assessments for five major projects</li></ul>
+          <div style="margin-top:.8rem"><span class="tl-tag">Performance Optimisation</span><span class="tl-tag">SCADA Analysis</span><span class="tl-tag">Life Extension</span><span class="tl-tag">Aerodynamic Upgrades</span></div>
+        </div>
+      </div>
+      <div class="tli rv">
+        <div class="tli-meta"><span class="tli-period">Aug 2015 — Jul 2016</span><div class="tli-company">SunEdison</div><div class="tli-loc">India</div></div>
+        <div class="tli-content">
+          <h3>Wind Analyst</h3>
+          <p>End-to-end project development from site screening through pre-feasibility study. Led met mast installation, wind data analysis, turbine site suitability assessment, and Energy Yield Estimate preparation. Power curve testing per IEC 61400-12-1.</p>
+          <ul class="tli-achv"><li>Established development portfolio of 1 GW in emerging markets</li></ul>
+          <div style="margin-top:.8rem"><span class="tl-tag">Project Development</span><span class="tl-tag">Site Screening</span><span class="tl-tag">Met Mast</span><span class="tl-tag">IEC 61400-12-1</span></div>
+        </div>
+      </div>
+      <div class="tli rv">
+        <div class="tli-meta"><span class="tli-period">May 2013 — Jul 2015</span><div class="tli-company">MeteoPole</div><div class="tli-loc">India · Thailand · Asia</div></div>
+        <div class="tli-content">
+          <h3>Project Engineer — LiDAR &amp; Measurement</h3>
+          <p>Led team management, client engagement and tool development. Spearheaded nacelle-mounted LiDAR installation, yaw misalignment correction, and relative power curve measurement. Power curve testing per IEC 61400-12-1, performance analysis, SCADA data analysis.</p>
+          <ul class="tli-achv"><li>India's first nacelle-mounted LiDAR — yaw error correction + power curve measurement</li><li>Thailand's first ground-based LiDAR WRA campaign in complex terrain</li><li>Best Employee of the Year 2013 &amp; 2014 — Measurement Team</li></ul>
+          <div style="margin-top:.8rem"><span class="tl-tag">LiDAR</span><span class="tl-tag">Yaw Correction</span><span class="tl-tag">Power Curve</span><span class="tl-tag">Measurement</span></div>
+        </div>
+      </div>
+      <div class="tli rv">
+        <div class="tli-meta"><span class="tli-period">Sep 2012 — May 2013</span><div class="tli-company">SgurrEnergy</div><div class="tli-loc">India</div></div>
+        <div class="tli-content">
+          <h3>Graduate Engineer</h3>
+          <p>Site visits, bankable energy yield assessments, wind farm construction monitoring as owner's and lender's engineer. Site identification, feasibility studies, wind regime analysis and wind flow modelling.</p>
+          <div style="margin-top:.8rem"><span class="tl-tag">Bankable EYA</span><span class="tl-tag">Lender's Engineer</span><span class="tl-tag">Wind Flow Modelling</span><span class="tl-tag">Site Assessment</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" class="section-wrap">
+  <div class="container">
+    <div class="proj-hdr">
+      <div class="rv"><div class="eyebrow gold">Signature Innovations</div><h2 class="stitle">Pioneering<br><em>Firsts</em></h2></div>
+      <p class="rv d2" style="font-size:.95rem;font-weight:300;line-height:1.85;color:rgba(255,255,255,.58);">Two industry-first deployments that set new benchmarks for measurement accuracy and AEP optimisation across Asia — plus an ongoing 1+ GW multi-continent procurement programme.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pcard rv">
+        <span class="pnum">01 · India · 2013–2014</span>
+        <span class="pcard-icon">📡</span>
+        <h3 class="ptitle">India's First Nacelle-Mounted LiDAR Campaign</h3>
+        <p class="pdesc">Pioneered the first-ever nacelle-mounted LiDAR deployment in India at Surajbari Wind Farm (34.5 MW, 20 Vestas turbines). Achieved using up to 440m wind speed measurement, enabling real-time yaw error correction and power curve measurement accuracy.</p>
+        <div class="pstats">
+          <div><span class="pstat-n">−7.55°</span><span class="pstat-l">Yaw Error Corrected</span></div>
+          <div><span class="pstat-n">2.4%</span><span class="pstat-l">AEP Gain</span></div>
+        </div>
+        <div class="ptags"><span class="ptag">LiDAR</span><span class="ptag">Vestas V90</span><span class="ptag">Yaw Correction</span><span class="ptag">Power Curve</span><span class="ptag">34.5 MW</span></div>
+        <span class="pbadge">First-mover in India</span>
+      </div>
+      <div class="pcard rv d2">
+        <span class="pnum">02 · Thailand · 2014</span>
+        <span class="pcard-icon">🌏</span>
+        <h3 class="ptitle">Thailand - Ground-Based LiDAR for WRA</h3>
+        <p class="pdesc">Designed Thailand's first ground-based LiDAR wind measurement campaign in complex terrain. 4 strategic LiDAR locations with CFD-optimised strategy reduced energy yield uncertainty from 14.87% to 13.19% for a 64 MW project at 120m hub height.</p>
+        <div class="pstats">
+          <div><span class="pstat-n">1.68%</span><span class="pstat-l">Uncertainty Reduced</span></div>
+          <div><span class="pstat-n">64 MW</span><span class="pstat-l">Project Scale</span></div>
+        </div>
+        <div class="ptags"><span class="ptag">Ground LiDAR</span><span class="ptag">CFD</span><span class="ptag">Complex Terrain</span><span class="ptag">WRA</span></div>
+        <span class="pbadge">Regional benchmark</span>
+      </div>
+      <div class="pcard pcard--w rv">
+        <span class="pnum">03 · Portugal + Japan · Active 2020–Present</span>
+        <span class="pcard-icon">🌐</span>
+        <h3 class="ptitle">1+ GW Multi-Continent WTG Procurement Programme</h3>
+        <p class="pdesc">Managing a dual-market WTG procurement programme simultaneously across Europe and Asia-Pacific. Full procurement lifecycle — competitive ITT issuance, binding proposal evaluation, technical and commercial analysis, TSA negotiation and execution. Supported by 800 MW due diligence portfolio in Portugal.</p>
+        <div class="pstats">
+          <div><span class="pstat-n">800 MW</span><span class="pstat-l">Portugal</span></div>
+          <div><span class="pstat-n">200 MW</span><span class="pstat-l">Japan</span></div>
+          <div><span class="pstat-n">800 MW</span><span class="pstat-l">Due Diligence</span></div>
+        </div>
+        <div class="ptags"><span class="ptag">WTG Procurement</span><span class="ptag">TSA Negotiation</span><span class="ptag">Due Diligence</span><span class="ptag">Portugal</span><span class="ptag">Japan</span><span class="ptag">Blue Power Partners</span></div>
+        <span class="pbadge">Active · Ongoing</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills" class="section-wrap">
+  <div class="container">
+    <div class="rv"><div class="eyebrow">Capabilities</div><h2 class="stitle">Technical <em>Arsenal</em></h2></div>
+    <div class="sgrid">
+
+      <!-- 1. Wind Resource Assessment — anemometer on met mast (larger) -->
+      <div class="sgroup rv">
+        <div class="sg-icon-wrap">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <line x1="18" y1="34" x2="18" y2="11" stroke="#2d9cce" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="11" y1="18" x2="25" y2="18" stroke="#2d9cce" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="11" cy="18" r="5" fill="#1db87e" opacity=".88"/>
+            <circle cx="11" cy="18" r="2.5" fill="#071828"/>
+            <circle cx="25" cy="18" r="5" fill="#1db87e" opacity=".88"/>
+            <circle cx="25" cy="18" r="2.5" fill="#071828"/>
+            <circle cx="18" cy="11" r="5" fill="#1db87e" opacity=".88"/>
+            <circle cx="18" cy="11" r="2.5" fill="#071828"/>
+            <path d="M4 26 Q7 24 10 26" stroke="#87ceeb" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M4 29 Q8 27 11 29" stroke="#87ceeb" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            <line x1="14" y1="34" x2="22" y2="34" stroke="#2d9cce" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Wind Resource Assessment</h3>
+        <ul class="slist"><li>Site prospection &amp; hunt</li><li>Measurement campaign design</li><li>Wind flow modelling (WAsP, WindPro)</li><li>Energy Yield Assessment (EYA)</li><li>Losses &amp; uncertainty estimation</li><li>CFD analysis (ZephyTOOLS)</li><li>Wind regime analysis</li></ul>
+      </div>
+
+      <!-- 2. Procurement & Contracts — turbine + contract document -->
+      <div class="sgroup rv d1">
+        <div class="sg-icon-wrap">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <!-- Turbine -->
+            <line x1="18" y1="34" x2="18" y2="21" stroke="#2d9cce" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="18" cy="20" r="4" fill="#cceeff"/>
+            <circle cx="18" cy="20" r="2" fill="#1db87e"/>
+            <line x1="18" y1="20" x2="18" y2="9"  stroke="#e0f6ff" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="18" y1="20" x2="9"  y2="26" stroke="#e0f6ff" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="18" y1="20" x2="27" y2="26" stroke="#c8ecf8" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Contract badge -->
+            <circle cx="28" cy="28" r="7.5" fill="#0a2840" stroke="#1db87e" stroke-width="2"/>
+            <path d="M25 28 l2.5 2.5 4-4" stroke="#1db87e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Procurement &amp; Contracts</h3>
+        <ul class="slist"><li>WTG &amp; TSA procurement</li><li>RFI / ITT preparation</li><li>Binding offer evaluation</li><li>TSA &amp; exhibit negotiation</li><li>Technical due diligence</li><li>OEM management</li><li>Power curve verification</li></ul>
+      </div>
+
+      <!-- 3. LiDAR & Measurement — nacelle + cyan beam downward (matches hero turbine exactly) -->
+      <div class="sgroup rv d2">
+        <div class="sg-icon-wrap">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <!-- Nacelle box -->
+            <rect x="12" y="12" width="18" height="10" rx="4" fill="#8ed4f0" opacity=".93"/>
+            <rect x="12" y="12" width="18" height="5.5" rx="4" fill="rgba(255,255,255,.3)"/>
+            <!-- Hub + green dot -->
+            <circle cx="15" cy="17" r="5"   fill="#cceeff"/>
+            <circle cx="15" cy="17" r="3.2" fill="#88d4f0"/>
+            <circle cx="15" cy="17" r="1.8" fill="#1db87e"/>
+            <circle cx="15" cy="17" r=".9"  fill="#4dffc0"/>
+            <!-- LiDAR beam downward -->
+            <line x1="15" y1="22" x2="15" y2="32" stroke="#50e0ff" stroke-width="5.5" stroke-linecap="round" opacity=".88"/>
+            <line x1="12.5" y1="26" x2="12.5" y2="32" stroke="#50e0ff" stroke-width="1.5" stroke-linecap="round" opacity=".28"/>
+            <line x1="17.5" y1="26" x2="17.5" y2="32" stroke="#50e0ff" stroke-width="1.5" stroke-linecap="round" opacity=".28"/>
+            <!-- Ground glow -->
+            <ellipse cx="15" cy="32" rx="9" ry="2.8" fill="#1db87e" opacity=".48"/>
+            <!-- Sweep ring -->
+            <circle cx="15" cy="17" r="11" fill="none" stroke="rgba(29,184,126,.22)" stroke-width="1" stroke-dasharray="3,5"/>
+          </svg>
+        </div>
+        <h3>LiDAR &amp; Measurement</h3>
+        <ul class="slist"><li>Nacelle-mounted LiDAR (Avent)</li><li>Ground-based LiDAR campaigns</li><li>Yaw misalignment correction</li><li>IEC 61400-12-1 (Ed 1 &amp; 2)</li><li>Met mast installation</li><li>MEASNET procedure</li><li>Data quality control</li></ul>
+      </div>
+
+      <!-- 4. Asset Performance — wind farm + performance uptrend -->
+      <div class="sgroup rv d1">
+        <div class="sg-icon-wrap">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <line x1="7"  y1="33" x2="7"  y2="23" stroke="#2d9cce" stroke-width="2" stroke-linecap="round"/>
+            <line x1="18" y1="33" x2="18" y2="20" stroke="#2d9cce" stroke-width="2" stroke-linecap="round"/>
+            <line x1="29" y1="33" x2="29" y2="23" stroke="#2d9cce" stroke-width="2" stroke-linecap="round"/>
+            <line x1="7"  y1="23" x2="7"  y2="17" stroke="#e0f6ff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="7"  y1="23" x2="3"  y2="27" stroke="#e0f6ff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="7"  y1="23" x2="11" y2="27" stroke="#c8ecf8" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="18" y1="20" x2="18" y2="13" stroke="#e0f6ff" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="18" y1="20" x2="13" y2="25" stroke="#e0f6ff" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="18" y1="20" x2="23" y2="25" stroke="#c8ecf8" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="29" y1="23" x2="29" y2="17" stroke="#e0f6ff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="29" y1="23" x2="25" y2="27" stroke="#e0f6ff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="29" y1="23" x2="33" y2="27" stroke="#c8ecf8" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M3 14 L9 10.5 L19 12.5 L33 6" stroke="#1db87e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M30 6 L33 6 L33 9" stroke="#1db87e" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Asset Performance</h3>
+        <ul class="slist"><li>SCADA data analysis</li><li>Performance reconciliation</li><li>Aerodynamic upgrades</li><li>Power uprate programmes</li><li>Extended cut-out</li><li>Life extension assessment</li><li>Alarm analysis</li></ul>
+      </div>
+
+      <!-- 5. Software & Tools — laptop with wind CFD simulation on screen -->
+      <div class="sgroup rv d2">
+        <div class="sg-icon-wrap">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <!-- Laptop outline -->
+            <rect x="3" y="6" width="30" height="21" rx="3" stroke="#2d9cce" stroke-width="2"/>
+            <rect x="5" y="8" width="26" height="17" rx="1.5" fill="rgba(45,156,206,.1)"/>
+            <!-- Screen title bar -->
+            <rect x="3" y="6" width="30" height="5" rx="3" fill="rgba(45,156,206,.15)"/>
+            <circle cx="7"  cy="8.5" r="1.2" fill="#f0a500"/>
+            <circle cx="11" cy="8.5" r="1.2" fill="#1db87e"/>
+            <circle cx="15" cy="8.5" r="1.2" fill="#2d9cce"/>
+            <!-- Wind field simulation arrows on screen -->
+            <path d="M8 15 Q11 13 14 15" stroke="#1db87e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <path d="M16 15 Q19 13 22 15" stroke="#1db87e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <path d="M8 19 Q12 17 17 19 Q22 21 27 19" stroke="#87ceeb" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M8 22.5 Q11 20.5 14 22.5" stroke="#87ceeb" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <path d="M16 22.5 Q19 20.5 22 22.5" stroke="#87ceeb" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <!-- Laptop base/keyboard -->
+            <path d="M1 27 L35 27 L33 31 L3 31 Z" fill="#0a2840" stroke="#2d9cce" stroke-width="1.5"/>
+            <line x1="15" y1="29" x2="21" y2="29" stroke="#2d9cce" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Software &amp; Tools</h3>
+        <ul class="slist"><li>WAsP &amp; WindPro</li><li>Windographer</li><li>ZephyTOOLS (CFD)</li><li>GlobalMapper</li><li>Python &amp; MATLAB</li><li>Windows &amp; Ubuntu</li></ul>
+      </div>
+
+      <!-- 6. Domain Knowledge — IEC standards books + certificate medal -->
+      <div class="sgroup rv d3">
+        <div class="sg-icon-wrap">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <!-- 3 standing books (IEC standards) -->
+            <rect x="3"  y="8"  width="9"  height="20" rx="2" stroke="#2d9cce" stroke-width="1.8"/>
+            <rect x="14" y="12" width="9"  height="20" rx="2" stroke="#87ceeb" stroke-width="1.8"/>
+            <rect x="25" y="5"  width="9"  height="20" rx="2" stroke="#2d9cce" stroke-width="1.8"/>
+            <!-- Lines in books -->
+            <line x1="5"  y1="14" x2="10" y2="14" stroke="#1db87e" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="5"  y1="17" x2="10" y2="17" stroke="#87ceeb" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="5"  y1="20" x2="9"  y2="20" stroke="#87ceeb" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="27" y1="11" x2="32" y2="11" stroke="#1db87e" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="27" y1="14" x2="32" y2="14" stroke="#87ceeb" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="27" y1="17" x2="31" y2="17" stroke="#87ceeb" stroke-width="1.2" stroke-linecap="round"/>
+            <!-- Certificate medal bottom centre -->
+            <circle cx="18" cy="33" r="0" fill="none"/><!-- anchor -->
+            <path d="M14 33 Q18 29 22 33" stroke="#f0a500" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <circle cx="18" cy="33" r="2.5" fill="#f0a500" opacity=".9"/>
+            <circle cx="18" cy="33" r="1.2" fill="#0a2840"/>
+          </svg>
+        </div>
+        <h3>Domain Knowledge</h3>
+        <ul class="slist"><li>IEC 61400-1 &amp; 12-1</li><li>Grid code compliance</li><li>Project development lifecycle</li><li>Lender's &amp; owner's engineering</li><li>Bankable EYA methodology</li><li>Load assessment</li></ul>
+      </div>
+    </div>
+
+    <div class="cert-strip rv">
+      <div class="cert-v-label">Certifications &amp; Training</div>
+      <div class="cbadges">
+        <div class="cbadge">DNV-GL · IEC 61400-12-1 Power Performance</div>
+        <div class="cbadge">Avent LiDAR · Nacelle-Mounted Technology</div>
+        <div class="cbadge">Vestas Siting Universe</div>
+        <div class="cbadge">Vestas Load Check</div>
+        <div class="cbadge">IEC 61400-12-1 Ed 1 &amp; Ed 2</div>
+        <div class="cbadge">MEASNET Procedure</div>
+      </div>
+    </div>
+
+    <div style="margin-top:3rem" class="rv"><div class="eyebrow gold">Recognition</div></div>
+    <div class="award-grid">
+      <div class="acard rv"><span class="ayear">2013 · 2014</span><div class="atitle">Best Employee of the Year</div><div class="aorg">MeteoPole · Measurement Team</div></div>
+      <div class="acard rv d1"><span class="ayear">2018</span><div class="atitle">Outperformer of the Year</div><div class="aorg">Envision Energy · Solution Engineering</div></div>
+      <div class="acard rv d2"><span class="ayear">2013</span><div class="atitle">India's First, Thailand's First </div><div class="aorg">LiDAR Measurement Campaign · Asia</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education" class="section-wrap">
+  <div class="container">
+    <div class="rv"><div class="eyebrow">Education</div><h2 class="stitle">Academic <em>Foundation</em></h2></div>
+    <div class="edu-grid">
+      <div class="ecard2 rv"><span class="edeg">Post-Graduate Diploma</span><div class="ename">Wind Resource Assessment</div><div class="euni">Amrita University</div><span class="eperiod">August 2011 — May 2012 · CGPA: 6.47/10</span><p class="edetail">Advanced WRA methodologies, wind farm O&amp;M, electronics &amp; instrumentation, aerodynamics, computational fluid dynamics, and wind electric generators.</p></div>
+      <div class="ecard2 rv d2"><span class="edeg">Bachelor of Engineering</span><div class="ename">Mechanical Engineering</div><div class="euni">Anna University</div><span class="eperiod">September 2007 — June 2011 · Aggregate: 75.08%</span><p class="edetail">Comprehensive engineering education in manufacturing, mechanics, thermodynamics, and fluid dynamics — forming the technical foundation for a career in renewable energy systems.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section id="tools" class="section-wrap">
+  <div class="container">
+    <div class="rv">
+      <div class="eyebrow">Tools</div>
+      <h2 class="stitle">Professional <em>Tools</em></h2>
+      <p style="font-size:.95rem;font-weight:300;line-height:1.85;color:rgba(255,255,255,.6);margin-top:1rem;max-width:60ch">Browser-based wind resource assessment tool for Power Curve Verification (PCV) site selection per <strong style="color:var(--mint)">IEC 61400-12-1</strong>. Upload your mast and WTG data to identify the best test configuration, perform terrain assessment, and generate DNV-style measurement sector reports.</p>
+    </div>
+    <div class="tool-tabs" id="toolTabs">
+      <button class="tool-tab active" data-tab="tab-data">Data Input</button>
+      <button class="tool-tab" data-tab="tab-map">Site Map</button>
+      <button class="tool-tab" data-tab="tab-terrain">Terrain Assessment</button>
+      <button class="tool-tab" data-tab="tab-pcv">PCV Selection</button>
+      <button class="tool-tab" data-tab="tab-free">Freestream</button>
+      <button class="tool-tab" data-tab="tab-report">Report</button>
+    </div>
+
+    <!-- TAB 1: DATA INPUT -->
+    <div class="tool-panel active" id="tab-data">
+      <div class="tool-row">
+        <div class="tool-col">
+          <div class="tool-card">
+            <div class="tool-section-title">Meteorological Masts</div>
+            <div id="mastDataList" style="margin-bottom:1rem"></div>
+            <label class="tool-upload" for="mastFile">
+              <span class="tool-upload-icon">+</span>
+              <span class="tool-upload-text">Upload Mast CSV</span>
+              <span class="tool-upload-hint">name, latitude, longitude, mastheight, type, measurementheights</span>
+              <input type="file" id="mastFile" accept=".csv,.txt">
+            </label>
+          </div>
+        </div>
+        <div class="tool-col">
+          <div class="tool-card">
+            <div class="tool-section-title">Wind Turbines (Target WTGs)</div>
+            <div id="wtgDataList" style="margin-bottom:1rem"></div>
+            <label class="tool-upload" for="wtgFile">
+              <span class="tool-upload-icon">+</span>
+              <span class="tool-upload-text">Upload WTG CSV</span>
+              <span class="tool-upload-hint">name, latitude, longitude, rotordiameter, hubheight, ratedpower, istarget</span>
+              <input type="file" id="wtgFile" accept=".csv,.txt">
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-section-title">External Wind Farm Layout (Optional)</div>
+        <div id="extDataList" style="margin-bottom:1rem"></div>
+        <label class="tool-upload" for="extFile">
+          <span class="tool-upload-icon">+</span>
+          <span class="tool-upload-text">Upload External Wind Farm CSV (optional)</span>
+          <span class="tool-upload-hint">Same format as WTG CSV — turbines from neighboring wind farms affecting wake</span>
+          <input type="file" id="extFile" accept=".csv,.txt">
+        </label>
+      </div>
+      <div class="tool-card">
+        <div class="tool-section-title">Configuration</div>
+        <div class="tool-grid" style="gap:1rem;margin-bottom:1.5rem">
+          <div class="tool-fgroup"><label class="tool-label">IEC Standard</label><select class="tool-select" id="cfgIEC"><option value="IEC-61400-12-1-2017">IEC 61400-12-1:2017</option><option value="IEC-61400-12-1-2005">IEC 61400-12-1:2005</option></select></div>
+          <div class="tool-fgroup"><label class="tool-label">Sector Width</label><select class="tool-select" id="cfgSector"><option value="10">10 degrees (36 sectors)</option><option value="20">20 degrees (18 sectors)</option></select></div>
+          <div class="tool-fgroup"><label class="tool-label">Assessment Radius (m)</label><input class="tool-input" type="number" id="cfgRadius" value="5000" min="1000" max="20000"></div>
+          <div class="tool-fgroup"><label class="tool-label">Min Mast-WTG Distance (rotor D)</label><input class="tool-input" type="number" id="cfgMinD" value="2" min="1" max="10"></div>
+        </div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap">
+          <button class="tool-btn" id="btnDemo">Load Demo Data</button>
+          <button class="tool-btn" id="btnRun" style="background:var(--gold)">Run Full Analysis</button>
+          <button class="tool-btn-ghost" id="btnClear">Clear All Data</button>
+        </div>
+      </div>
+      <div id="toolErrors"></div>
+    </div>
+
+    <!-- TAB 2: SITE MAP -->
+    <div class="tool-panel" id="tab-map">
+      <div class="tool-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+          <div class="tool-section-title" style="margin-bottom:0">Site Layout</div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <span style="font-size:.6rem;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:.3rem"><span style="display:inline-block;width:10px;height:10px;background:#e74c3c;clip-path:polygon(50% 0%,0% 100%,100% 100%)"></span> Mast</span>
+            <span style="font-size:.6rem;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:.3rem"><span style="display:inline-block;width:10px;height:10px;background:#2d9cce;border-radius:50%"></span> Target WTG</span>
+            <span style="font-size:.6rem;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:.3rem"><span style="display:inline-block;width:10px;height:10px;background:rgba(255,255,255,.25);border-radius:50%"></span> Other WTG</span>
+            <span style="font-size:.6rem;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:.3rem"><span style="display:inline-block;width:10px;height:10px;background:#f0a500;transform:rotate(45deg)"></span> External WTG</span>
+          </div>
+        </div>
+        <div class="tool-canvas-wrap"><canvas id="mapCanvas" width="1100" height="700"></canvas></div>
+        <div id="mapInfo" style="margin-top:.8rem;font-size:.72rem;color:rgba(255,255,255,.4)"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TERRAIN ASSESSMENT -->
+    <div class="tool-panel" id="tab-terrain">
+      <div id="terrainContent">
+        <div class="tool-alert info">Run the analysis first to see terrain assessment results.</div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PCV SELECTION -->
+    <div class="tool-panel" id="tab-pcv">
+      <div id="pcvContent">
+        <div class="tool-alert info">Run the analysis first to see PCV selection results.</div>
+      </div>
+    </div>
+
+    <!-- TAB 5: FREESTREAM -->
+    <div class="tool-panel" id="tab-free">
+      <div id="freeContent">
+        <div class="tool-alert info">Run the analysis first to see freestream analysis results.</div>
+      </div>
+    </div>
+
+    <!-- TAB 6: REPORT -->
+    <div class="tool-panel" id="tab-report">
+      <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <button class="tool-btn" id="btnGenReport">Generate DNV-Style Report</button>
+        <button class="tool-btn-ghost" id="btnExportCSV">Export Sector Data (CSV)</button>
+        <button class="tool-btn-ghost" id="btnPrint">Print / Save as PDF</button>
+      </div>
+      <div id="reportContent">
+        <div class="tool-alert info">Run the analysis and click "Generate Report" to preview.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="section-wrap">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="rv">
+        <div class="eyebrow">Get in Touch</div>
+        <h2 class="contact-tagline">Let's build the <em>next</em> GW together.</h2>
+        <p class="contact-intro">Open to wind energy development roles, WTG procurement leadership, and senior advisory positions across Europe and Asia. Available for international opportunities.</p>
+        <div class="clinks">
+          <a class="clink" href="mailto:kvelmurugan77@gmail.com"><div class="cl-l"><div class="cl-ico-wrap">✉️</div><div><span class="cl-label">Email</span><span class="cl-val">kvelmurugan77@gmail.com</span></div></div><span class="cl-arrow">↗</span></a>
+          <a class="clink" href="tel:+919000500187"><div class="cl-l"><div class="cl-ico-wrap">📞</div><div><span class="cl-label">Phone</span><span class="cl-val">+91 900 050 0187</span></div></div><span class="cl-arrow">↗</span></a>
+          <a class="clink" href="https://www.linkedin.com/in/velmurugankaruppiah/" target="_blank"><div class="cl-l"><div class="cl-ico-wrap">🔗</div><div><span class="cl-label">LinkedIn</span><span class="cl-val">velmurugankaruppiah</span></div></div><span class="cl-arrow">↗</span></a>
+          <a class="clink" href="#"><div class="cl-l"><div class="cl-ico-wrap">📍</div><div><span class="cl-label">Location</span><span class="cl-val">Tiruppur, Tamil Nadu · Open to Relocation</span></div></div><span class="cl-arrow">↗</span></a>
+        </div>
+      </div>
+      <div class="form-panel rv d2">
+        <h3>Send a Message</h3>
+        <form id="contactForm">
+          <div class="fgrp"><label for="nm">Full Name</label><input type="text" id="nm" name="from_name" placeholder="Your full name" required></div>
+          <div class="fgrp"><label for="em">Email Address</label><input type="email" id="em" name="reply_to" placeholder="your@email.com" required></div>
+          <div class="fgrp"><label for="org">Organisation</label><input type="text" id="org" name="organisation" placeholder="Your company / organisation"></div>
+          <div class="fgrp">
+            <label for="sub">Enquiry Type</label>
+            <select id="sub" name="subject">
+              <option>WTG Procurement Opportunity</option>
+              <option>Wind Resource Assessment</option>
+              <option>Technical Consultation</option>
+              <option>Project Advisory</option>
+              <option>Job Opportunity</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="fgrp"><label for="msg">Message</label><textarea id="msg" name="message" placeholder="Tell me about your project or opportunity…"></textarea></div>
+          <button type="submit" class="fsub" id="submitBtn">Send Message →</button>
+          <p class="form-note" id="formNote">📨 Delivered directly to kvelmurugan77@gmail.com</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">Velmurugan Karuppiah</div>
+  <div class="foot-copy">© 2025 · Wind Energy Expert · Tiruppur, India</div>
+  <a class="foot-top" href="#hero">Back to top ↑</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+/* CURSOR */
+const cd=document.getElementById('cd'),cr=document.getElementById('cr');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function loop(){
+  cd.style.left=mx+'px';cd.style.top=my+'px';
+  rx+=(mx-rx)*.12;ry+=(my-ry)*.12;
+  cr.style.left=rx+'px';cr.style.top=ry+'px';
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cr.style.width='54px';cr.style.height='54px'});
+  el.addEventListener('mouseleave',()=>{cr.style.width='38px';cr.style.height='38px'});
+});
+if('ontouchstart' in window){cd.style.display='none';cr.style.display='none';document.body.style.cursor='auto'}
+
+/* BACKGROUND CANVAS */
+(function(){
+  const canvas=document.getElementById('bgCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H;
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
+  const stars=Array.from({length:80},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.3,a:Math.random(),da:Math.random()*.008+.003}));
+  const particles=[];
+  function mkP(){return{x:Math.random()*W,y:Math.random()*H*.8,vx:Math.random()*.8+.3,vy:(Math.random()-.5)*.15,life:0,maxLife:Math.random()*180+80,size:Math.random()*1.5+.5,alpha:0}}
+  for(let i=0;i<60;i++){const p=mkP();p.life=Math.random()*p.maxLife;particles.push(p)}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(s=>{s.a+=s.da;if(s.a>1||s.a<.2)s.da*=-1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(200,230,255,${s.a*.6})`;ctx.fill()});
+    particles.forEach(p=>{
+      p.life++;p.x+=p.vx;p.y+=p.vy;
+      const t=p.life/p.maxLife;p.alpha=t<.1?t/.1:t>.8?(1-t)/.2:1;
+      if(p.life>=p.maxLife){Object.assign(p,mkP());p.life=0}
+      ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(135,206,235,${p.alpha*.4})`;ctx.fill()
+    });
+    ctx.strokeStyle='rgba(45,156,206,0.04)';ctx.lineWidth=1;
+    const t=Date.now()/8000;
+    for(let i=0;i<5;i++){const y=H*(.2+i*.15)+Math.sin(t+i)*30;ctx.beginPath();ctx.moveTo(0,y);for(let x=0;x<=W;x+=40){ctx.lineTo(x,y+Math.sin(x/120+t+i*.7)*18)}ctx.stroke()}
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* NAV */
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>60));
+
+/* REVEAL */
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.1});
+document.querySelectorAll('.rv').forEach(r=>obs.observe(r));
+
+/* HERO PARTICLES */
+(function(){
+  const wrap=document.getElementById('particles');
+  for(let i=0;i<18;i++){
+    const d=document.createElement('div');d.className='p';
+    const size=Math.random()*4+2;
+    d.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*15+10}s;animation-delay:${Math.random()*10}s`;
+    wrap.appendChild(d);
+  }
+})();
+
+/* FORM — EmailJS */
+(function(){
+  // ── EmailJS config ──────────────────────────────────────────────────────
+  // These IDs are set up at emailjs.com connected to k.velmurugan77@gmail.com
+  // SERVICE_ID  : your Gmail service (e.g. "service_xxxxxxx")
+  // TEMPLATE_ID : your email template (e.g. "template_xxxxxxx")
+  // PUBLIC_KEY  : your EmailJS public key (e.g. "xxxxxxxxxxxxxxx")
+  // ─────────────────────────────────────────────────────────────────────────
+  const SERVICE_ID  = 'service_n78a5cu';
+  const TEMPLATE_ID = 'template_juvo4aa';
+  const PUBLIC_KEY  = 'H3oes1wegiAJ_Hzk5';
+
+  const form = document.getElementById('contactForm');
+  const btn  = document.getElementById('submitBtn');
+  const note = document.getElementById('formNote');
+
+  emailjs.init(PUBLIC_KEY);
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    // Check not yet configured
+    if(SERVICE_ID.includes('EMAILJS')){
+      note.textContent = '⚠️ See setup instructions below to activate email delivery.';
+      note.style.color = '#f0a500';
+      return;
+    }
+
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+
+    const params = {
+      from_name    : document.getElementById('nm').value,
+      reply_to     : document.getElementById('em').value,
+      organisation : document.getElementById('org').value,
+      subject      : document.getElementById('sub').value,
+      message      : document.getElementById('msg').value,
+    };
+
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, params)
+      .then(function(){
+        btn.textContent = '✓ Message Sent!';
+        btn.style.background = '#f0a500';
+        form.reset();
+        note.textContent = '📨 Message delivered to Velmurugan\'s inbox!';
+        note.style.color = '#1db87e';
+        setTimeout(()=>{
+          btn.textContent = 'Send Message →';
+          btn.style.background = '';
+          btn.disabled = false;
+          note.textContent = '📨 Delivered directly to k.velmurugan77@gmail.com';
+          note.style.color = '';
+        }, 4000);
+      })
+      .catch(function(err){
+        btn.textContent = 'Send Message →';
+        btn.disabled = false;
+        note.textContent = '⚠️ Failed — please email: kvelmurugan77@gmail.com';
+        note.style.color = '#f0a500';
+      });
+  });
+})();
+
+</script>
+
+<script>
+(function(){
+  var canvas = document.getElementById('wtgCanvas');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var dpr = window.devicePixelRatio||1;
+  var W = canvas.offsetWidth||720;
+  var H = canvas.offsetHeight||900;
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  ctx.scale(dpr,dpr);
+
+  function lerp(a,b,t){return a+(b-a)*t;}
+
+  var CX,BASE_Y,HUB_Y,BLADE_L,TOWER_TOP,TOWER_BOT,TOWER_W_TOP,TOWER_W_BOT;
+  function computeLayout(){
+    CX=W*0.48; BASE_Y=H*0.91; HUB_Y=H*0.26; BLADE_L=Math.min(W,H)*0.31;
+    TOWER_TOP=H*0.275; TOWER_BOT=H*0.91; TOWER_W_TOP=W*0.012; TOWER_W_BOT=W*0.030;
+  }
+  computeLayout();
+
+  window.addEventListener('resize',function(){
+    var dpr2=window.devicePixelRatio||1;
+    W=canvas.offsetWidth||720; H=canvas.offsetHeight||900;
+    canvas.width=W*dpr2; canvas.height=H*dpr2;
+    ctx=canvas.getContext('2d'); ctx.scale(dpr2,dpr2);
+    computeLayout();
+  });
+
+  var angle=0, airPhase=0;
+
+  function drawSky(){
+    var g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#020c1e'); g.addColorStop(0.5,'#071828'); g.addColorStop(1,'#0c2a42');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    var starData=[
+      [0.075,0.050,1.1,0.7],[0.183,0.031,0.8,0.5],[0.350,0.069,1.0,0.6],
+      [0.558,0.026,0.7,0.5],[0.663,0.079,1.2,0.7],[0.775,0.040,0.8,0.4],
+      [0.830,0.103,0.9,0.6],[0.103,0.126,0.7,0.5],[0.263,0.097,0.6,0.4],
+      [0.813,0.197,0.8,0.5],[0.047,0.211,0.7,0.4],[0.900,0.254,0.6,0.5],
+      [0.133,0.171,0.9,0.6],[0.292,0.050,0.8,0.5],[0.425,0.036,1.0,0.7],
+      [0.850,0.079,0.7,0.4],[0.037,0.286,0.6,0.5],[0.967,0.154,0.8,0.6],
+      [0.230,0.221,0.7,0.4],[0.700,0.060,0.9,0.6],
+    ];
+    starData.forEach(function(s){
+      ctx.beginPath(); ctx.arc(s[0]*W,s[1]*H,s[2],0,Math.PI*2);
+      ctx.fillStyle='rgba(220,235,255,'+s[3]+')'; ctx.fill();
+    });
+  }
+
+  function drawAirflow(ap){
+    var lines=[
+      {ny:HUB_Y-H*0.007, dy:-0.04, w:1.8, ph:0},
+      {ny:HUB_Y,          dy:0,     w:2.2, ph:0.7},
+      {ny:HUB_Y+H*0.007, dy:0.04,  w:1.8, ph:1.4},
+      {ny:HUB_Y-H*0.022, dy:-0.08, w:1.3, ph:2.1},
+      {ny:HUB_Y+H*0.022, dy:0.08,  w:1.3, ph:0.4},
+      {ny:HUB_Y-H*0.040, dy:-0.12, w:1.0, ph:1.8},
+      {ny:HUB_Y+H*0.040, dy:0.12,  w:1.0, ph:2.8},
+    ];
+    lines.forEach(function(fl){
+      var baseY=fl.ny;
+      ctx.beginPath();
+      for(var x=W*0.01;x<=CX-BLADE_L*0.12;x+=2){
+        var t=(x-W*0.01)/(CX-BLADE_L*0.12-W*0.01);
+        var wave=Math.sin(x*0.022+ap*1.1+fl.ph)*H*0.009*t;
+        var y=baseY+wave;
+        if(x<=W*0.012) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      var ug=ctx.createLinearGradient(W*0.01,0,CX-BLADE_L*0.12,0);
+      ug.addColorStop(0,'rgba(80,180,235,0)'); ug.addColorStop(0.25,'rgba(80,180,235,0.52)');
+      ug.addColorStop(0.85,'rgba(80,180,235,0.35)'); ug.addColorStop(1,'rgba(80,180,235,0)');
+      ctx.strokeStyle=ug; ctx.lineWidth=fl.w; ctx.stroke();
+
+      ctx.beginPath();
+      for(var x2=CX+BLADE_L*0.12;x2<=W*0.99;x2+=2){
+        var t2=(x2-CX-BLADE_L*0.12)/(W*0.99-CX-BLADE_L*0.12);
+        var expand=fl.dy*H*t2*1.4;
+        var turb=Math.sin(x2*0.038+ap*1.4+fl.ph+Math.PI)*H*0.012*(1+t2*0.5);
+        var y2=baseY+expand+turb;
+        if(x2<=CX+BLADE_L*0.13) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
+      }
+      var dg=ctx.createLinearGradient(CX+BLADE_L*0.12,0,W*0.99,0);
+      dg.addColorStop(0,'rgba(29,184,126,0)'); dg.addColorStop(0.12,'rgba(29,184,126,0.40)');
+      dg.addColorStop(0.7,'rgba(29,184,126,0.20)'); dg.addColorStop(1,'rgba(29,184,126,0)');
+      ctx.strokeStyle=dg; ctx.lineWidth=fl.w*0.85; ctx.stroke();
+    });
+    ctx.save(); ctx.setLineDash([5,10]); ctx.lineWidth=0.8;
+    ctx.strokeStyle='rgba(29,184,126,0.18)';
+    ctx.beginPath(); ctx.moveTo(CX+BLADE_L*0.12,HUB_Y); ctx.lineTo(W*0.99,HUB_Y-H*0.09); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX+BLADE_L*0.12,HUB_Y); ctx.lineTo(W*0.99,HUB_Y+H*0.09); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGround(){
+    var gg=ctx.createRadialGradient(CX,BASE_Y,0,CX,BASE_Y,W*0.22);
+    gg.addColorStop(0,'rgba(20,200,90,0.45)'); gg.addColorStop(0.4,'rgba(10,140,55,0.18)');
+    gg.addColorStop(1,'rgba(0,60,20,0)');
+    ctx.fillStyle=gg; ctx.beginPath();
+    ctx.ellipse(CX,BASE_Y,W*0.22,H*0.045,0,0,Math.PI*2); ctx.fill();
+    var sh=ctx.createRadialGradient(CX,BASE_Y+4,0,CX,BASE_Y+4,W*0.1);
+    sh.addColorStop(0,'rgba(0,4,12,0.85)'); sh.addColorStop(1,'rgba(0,4,12,0)');
+    ctx.fillStyle=sh; ctx.beginPath();
+    ctx.ellipse(CX,BASE_Y+4,W*0.08,H*0.014,0,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawTower(){
+    var twt=TOWER_W_TOP, twb=TOWER_W_BOT;
+    ctx.beginPath();
+    ctx.moveTo(CX-twt,TOWER_TOP);
+    ctx.quadraticCurveTo(CX-twb*0.9,(TOWER_TOP+TOWER_BOT)*0.5,CX-twb,TOWER_BOT);
+    ctx.lineTo(CX+twb,TOWER_BOT);
+    ctx.quadraticCurveTo(CX+twb*0.9,(TOWER_TOP+TOWER_BOT)*0.5,CX+twt,TOWER_TOP);
+    ctx.closePath();
+    var tg=ctx.createLinearGradient(CX-twb,0,CX+twb,0);
+    tg.addColorStop(0,'#0a2030'); tg.addColorStop(0.12,'#2a7090');
+    tg.addColorStop(0.38,'#c8e8f8'); tg.addColorStop(0.52,'#88c0d8');
+    tg.addColorStop(0.72,'#3878a0'); tg.addColorStop(1,'#0a1e30');
+    ctx.fillStyle=tg; ctx.fill();
+    ctx.strokeStyle='rgba(180,230,255,0.08)'; ctx.lineWidth=0.5; ctx.stroke();
+  }
+
+  function drawLiDAR(ap){
+    var pulse=0.6+Math.sin(ap*3.2)*0.25;
+    var bg=ctx.createLinearGradient(CX,HUB_Y+H*0.02,CX,BASE_Y);
+    bg.addColorStop(0,'rgba(0,240,255,'+(0.7*pulse)+')');
+    bg.addColorStop(0.3,'rgba(0,200,230,'+(0.3*pulse)+')');
+    bg.addColorStop(1,'rgba(0,160,200,0)');
+    var cw=W*0.04;
+    ctx.beginPath();
+    ctx.moveTo(CX-TOWER_W_TOP*0.3,HUB_Y+H*0.02);
+    ctx.lineTo(CX-cw,BASE_Y); ctx.lineTo(CX+cw,BASE_Y);
+    ctx.lineTo(CX+TOWER_W_TOP*0.3,HUB_Y+H*0.02);
+    ctx.fillStyle=bg; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(CX,HUB_Y+H*0.02); ctx.lineTo(CX,BASE_Y);
+    ctx.strokeStyle='rgba(200,252,255,'+(0.8*pulse)+')'; ctx.lineWidth=2; ctx.stroke();
+    var rings=[W*0.07,W*0.12,W*0.17];
+    rings.forEach(function(r,i){
+      ctx.beginPath(); ctx.ellipse(CX,HUB_Y+H*0.018,r,r*0.22,0,0,Math.PI*2);
+      ctx.strokeStyle='rgba(29,184,126,'+(0.14-i*0.04)+')';
+      ctx.lineWidth=0.9; ctx.setLineDash([4+i*2,8+i*3]); ctx.stroke(); ctx.setLineDash([]);
+    });
+    ctx.font='bold '+(W*0.016)+'px Courier New,monospace';
+    ctx.fillStyle='rgba(29,184,126,0.72)';
+    ctx.fillText('LiDAR',CX+W*0.08,HUB_Y+H*0.012);
+    ctx.beginPath(); ctx.moveTo(CX+W*0.04,HUB_Y+H*0.009); ctx.lineTo(CX+W*0.075,HUB_Y+H*0.009);
+    ctx.strokeStyle='rgba(29,184,126,0.35)'; ctx.lineWidth=0.8;
+    ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  function drawNacelle(){
+    var nW=TOWER_W_TOP*3.5, nH=H*0.022;
+    var nx=CX-nW/2, ny=HUB_Y-nH/2;
+    var ng=ctx.createLinearGradient(nx,ny,nx,ny+nH);
+    ng.addColorStop(0,'#c8e8ff'); ng.addColorStop(0.4,'#88b8d8'); ng.addColorStop(1,'#3870a0');
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(nx,ny,nW,nH,3);
+    else ctx.rect(nx,ny,nW,nH);
+    ctx.fillStyle=ng; ctx.fill();
+    ctx.strokeStyle='rgba(200,240,255,0.3)'; ctx.lineWidth=0.8; ctx.stroke();
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(nx+2,ny+1,nW-4,nH*0.35,2);
+    else ctx.rect(nx+2,ny+1,nW-4,nH*0.35);
+    ctx.fillStyle='rgba(255,255,255,0.22)'; ctx.fill();
+    var ax=CX+nW*0.18, ay=ny;
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(ax,ay-H*0.018);
+    ctx.strokeStyle='#58a8d0'; ctx.lineWidth=1.5; ctx.stroke();
+    var ag=ctx.createRadialGradient(ax,ay-H*0.019,0,ax,ay-H*0.019,H*0.009);
+    ag.addColorStop(0,'rgba(29,184,126,0.9)'); ag.addColorStop(1,'rgba(29,184,126,0)');
+    ctx.fillStyle=ag; ctx.beginPath(); ctx.arc(ax,ay-H*0.019,H*0.009,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1db87e'; ctx.beginPath(); ctx.arc(ax,ay-H*0.019,H*0.005,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#44ffb5'; ctx.beginPath(); ctx.arc(ax,ay-H*0.019,H*0.0025,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawSingleBlade(length,ang){
+    var lit=(Math.sin(ang)+1)*0.5;
+    var profile=[
+      {t:0.00,lw:8, rw:5},{t:0.06,lw:9, rw:6},{t:0.15,lw:8, rw:5},
+      {t:0.30,lw:6, rw:4},{t:0.50,lw:4, rw:3},{t:0.70,lw:2.5,rw:2},
+      {t:0.88,lw:1.2,rw:1},{t:1.00,lw:0, rw:0}
+    ];
+    // Scale profile by canvas width for proper proportions
+    var sc=W/600;
+    ctx.beginPath();
+    ctx.moveTo(-profile[0].lw*sc,0);
+    for(var i=1;i<profile.length;i++) ctx.lineTo(-profile[i].lw*sc,-profile[i].t*length);
+    for(var j=profile.length-1;j>=0;j--) ctx.lineTo(profile[j].rw*sc,-profile[j].t*length);
+    ctx.closePath();
+    var r=Math.round(lerp(0xa0,0xf0,lit));
+    var g=Math.round(lerp(0xc0,0xf8,lit));
+    var b=Math.round(lerp(0xd8,0xff,lit));
+    var bg=ctx.createLinearGradient(-10*sc,0,10*sc,-length);
+    bg.addColorStop(0,'rgb('+r+','+g+','+b+')');
+    bg.addColorStop(0.3,'rgb('+Math.round(r*0.88)+','+Math.round(g*0.88)+','+Math.round(b*0.9)+')');
+    bg.addColorStop(0.7,'rgb('+Math.round(r*0.72)+','+Math.round(g*0.75)+','+Math.round(b*0.82)+')');
+    bg.addColorStop(1,'rgb('+Math.round(r*0.55)+','+Math.round(g*0.6)+','+Math.round(b*0.7)+')');
+    ctx.fillStyle=bg; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-profile[0].lw*sc,0);
+    for(var k=1;k<profile.length;k++) ctx.lineTo(-profile[k].lw*sc,-profile[k].t*length);
+    ctx.strokeStyle='rgba(255,255,255,'+(0.3+lit*0.55)+')'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(profile[0].rw*sc,0);
+    for(var m=1;m<profile.length;m++) ctx.lineTo(profile[m].rw*sc,-profile[m].t*length);
+    ctx.strokeStyle='rgba(20,50,90,'+(0.3+(1-lit)*0.3)+')'; ctx.lineWidth=0.8; ctx.stroke();
+  }
+
+  function drawHub(){
+    var hr=BLADE_L*0.082;
+    var hg=ctx.createRadialGradient(CX,HUB_Y,0,CX,HUB_Y,hr*2);
+    hg.addColorStop(0,'rgba(60,160,220,0.18)'); hg.addColorStop(1,'rgba(0,20,60,0)');
+    ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(CX,HUB_Y,hr*2,0,Math.PI*2); ctx.fill();
+    var rb=ctx.createRadialGradient(CX-hr*0.3,HUB_Y-hr*0.3,hr*0.05,CX,HUB_Y,hr);
+    rb.addColorStop(0,'#f0f8ff'); rb.addColorStop(0.25,'#c0ddf0');
+    rb.addColorStop(0.6,'#6090c0'); rb.addColorStop(1,'#0a2040');
+    ctx.fillStyle=rb; ctx.beginPath(); ctx.arc(CX,HUB_Y,hr,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(180,220,255,0.4)'; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.arc(CX,HUB_Y,hr*0.82,0,Math.PI*2); ctx.stroke();
+    var sc=ctx.createRadialGradient(CX-hr*0.1,HUB_Y-hr*0.1,0,CX,HUB_Y,hr*0.4);
+    sc.addColorStop(0,'#70b8e0'); sc.addColorStop(1,'#1050a0');
+    ctx.fillStyle=sc; ctx.beginPath(); ctx.arc(CX,HUB_Y,hr*0.4,0,Math.PI*2); ctx.fill();
+    var cg=ctx.createRadialGradient(CX,HUB_Y,0,CX,HUB_Y,hr*0.25);
+    cg.addColorStop(0,'rgba(29,184,126,1)'); cg.addColorStop(1,'rgba(29,184,126,0)');
+    ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(CX,HUB_Y,hr*0.28,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1db87e'; ctx.beginPath(); ctx.arc(CX,HUB_Y,hr*0.16,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#88ffcc'; ctx.beginPath(); ctx.arc(CX,HUB_Y,hr*0.07,0,Math.PI*2); ctx.fill();
+    for(var i=0;i<6;i++){
+      var ba=i*Math.PI/3, br=hr*0.62;
+      var bx=CX+Math.cos(ba)*br, by=HUB_Y+Math.sin(ba)*br;
+      ctx.fillStyle='rgba(5,15,45,0.7)'; ctx.beginPath(); ctx.arc(bx,by,hr*0.1,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(160,210,255,0.3)'; ctx.lineWidth=0.6;
+      ctx.beginPath(); ctx.arc(bx,by,hr*0.1,0,Math.PI*2); ctx.stroke();
+    }
+  }
+
+  function drawRotor(ang){
+    ctx.save(); ctx.translate(CX,HUB_Y);
+    for(var b=0;b<3;b++){
+      var bAng=ang+b*Math.PI*2/3;
+      ctx.save(); ctx.rotate(bAng);
+      drawSingleBlade(BLADE_L,bAng);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function drawWindLabel(){
+    ctx.font=(W*0.014)+'px Courier New,monospace';
+    ctx.fillStyle='rgba(90,185,235,0.52)';
+    ctx.fillText('→  8.5 m/s',W*0.025,HUB_Y+H*0.008);
+    ctx.beginPath(); ctx.moveTo(W*0.025,HUB_Y+H*0.018); ctx.lineTo(W*0.15,HUB_Y+H*0.018);
+    ctx.strokeStyle='rgba(90,185,235,0.18)'; ctx.lineWidth=0.8; ctx.stroke();
+  }
+
+  var last2=0;
+  function render(ts){
+    var dt=Math.min((ts-last2)/1000,0.05); last2=ts;
+    angle+=dt*0.72; airPhase+=dt*0.95;
+    ctx.clearRect(0,0,W,H);
+    drawSky();
+    drawWindLabel();
+    drawAirflow(airPhase);
+    drawGround();
+    drawTower();
+    drawLiDAR(airPhase);
+    drawRotor(angle);
+    drawHub();
+    drawNacelle();
+    requestAnimationFrame(render);
+  }
+
+  function start(){
+    var dpr2=window.devicePixelRatio||1;
+    W=canvas.offsetWidth||720; H=canvas.offsetHeight||900;
+    canvas.width=W*dpr2; canvas.height=H*dpr2;
+    ctx=canvas.getContext('2d'); ctx.scale(dpr2,dpr2);
+    computeLayout();
+    requestAnimationFrame(render);
+  }
+
+  if(document.readyState==='complete') setTimeout(start,30);
+  else window.addEventListener('load',function(){setTimeout(start,30);});
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     WIND RESOURCE ASSESSMENT TOOL — COMPLETE ENGINE + UI
+     IEC 61400-12-1 Terrain Assessment | PCV Selection | Freestream Analysis
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+'use strict';
+
+/* ── 1. GEO ENGINE ─────────────────────────────────────── */
+var WGeo={
+  R:6371000,
+  toRad:function(d){return d*Math.PI/180},
+  toDeg:function(r){return r*180/Math.PI},
+  haversine:function(a,b){
+    var dLat=this.toRad(b.latitude-a.latitude),dLon=this.toRad(b.longitude-a.longitude);
+    var la1=this.toRad(a.latitude),la2=this.toRad(b.latitude);
+    var h=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    return this.R*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+  },
+  bearing:function(a,b){
+    var dLon=this.toRad(b.longitude-a.longitude),la1=this.toRad(a.latitude),la2=this.toRad(b.latitude);
+    var y=Math.sin(dLon)*Math.cos(la2),x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLon);
+    var r=this.toDeg(Math.atan2(y,x));return((r%360)+360)%360;
+  },
+  destination:function(s,brng,d){
+    var dR=d/this.R,la1=this.toRad(s.latitude),lo1=this.toRad(s.longitude),b=this.toRad(brng);
+    var la2=Math.asin(Math.sin(la1)*Math.cos(dR)+Math.cos(la1)*Math.sin(dR)*Math.cos(b));
+    var lo2=lo1+Math.atan2(Math.sin(b)*Math.sin(dR)*Math.cos(la1),Math.cos(dR)-Math.sin(la1)*Math.sin(la2));
+    return{latitude:this.toDeg(la2),longitude:this.toDeg(lo2)};
+  },
+  normalizeAngle:function(a){return((a%360)+360)%360},
+  angularDeviation:function(ref,test){var d=Math.abs(ref-test);return d>180?360-d:d},
+  hash:function(x,y,s){var h=s+x*374761393+y*668265263;h=((h^(h>>13))*1274126177)|0;return((h^(h>>16))&0x7fffffff)/0x7fffffff},
+  smoothstep:function(t){return t*t*(3-2*t)},
+  valueNoise:function(x,y,s){
+    var ix=Math.floor(x),iy=Math.floor(y),fx=this.smoothstep(x-ix),fy=this.smoothstep(y-iy);
+    var n00=this.hash(ix,iy,s),n10=this.hash(ix+1,iy,s),n01=this.hash(ix,iy+1,s),n11=this.hash(ix+1,iy+1,s);
+    var nx0=n00+(n10-n00)*fx,nx1=n01+(n11-n01)*fx;return nx0+(nx1-nx0)*fy;
+  },
+  fbm:function(x,y,s,oct){
+    var v=0,a=1,f=1,mx=0;oct=oct||4;
+    for(var i=0;i<oct;i++){v+=a*this.valueNoise(x*f,y*f,s+i*31);mx+=a;a*=0.5;f*=2}
+    return v/mx;
+  },
+  syntheticElevation:function(lat,lon,base,seed){
+    base=base||50;seed=seed||42;
+    var x=lon*1000,y=lat*1000;
+    return base+(this.fbm(x*0.01,y*0.01,seed,3)-0.5)*40+(this.fbm(x*0.02,y*0.02,seed+100,3)-0.5)*20+(this.fbm(x*0.05,y*0.05,seed+200,2)-0.5)*6;
+  },
+  terrainProfile:function(origin,dir,maxD,step){
+    step=step||50;var profile=[],base=origin.elevation||this.syntheticElevation(origin.latitude,origin.longitude);
+    for(var d=step;d<=maxD;d+=step){
+      var pt=this.destination(origin,dir,d);
+      var elev=this.syntheticElevation(pt.latitude,pt.longitude,base);
+      var prev=profile.length>0?profile[profile.length-1].elevation:base;
+      var slope=d===step?0:((elev-prev)/(step))*100;
+      profile.push({distance:d,elevation:elev,slope:slope});
+    }
+    return profile;
+  },
+  roughnessClass:function(z0){
+    if(z0<=0.0002)return{c:0,d:'Open water'};if(z0<=0.005)return{c:0.5,d:'Smooth bare soil'};
+    if(z0<=0.03)return{c:1,d:'Open agricultural'};if(z0<=0.1)return{c:1.5,d:'Scattered obstacles'};
+    if(z0<=0.25)return{c:2,d:'Many obstacles'};if(z0<=0.5)return{c:2.5,d:'Villages'};
+    if(z0<=1.0)return{c:3,d:'Small towns'};if(z0<=2.0)return{c:3.5,d:'Large towns'};
+    return{c:4,d:'City centers'};
+  }
+};
+
+/* ── 2. TERRAIN ASSESSMENT ENGINE ───────────────────────── */
+var WTerrain={
+  assess:function(mast,wtg,allWtgs,cfg){
+    var dist=WGeo.haversine(mast.location,wtg.location);
+    var distD=dist/wtg.rotorDiameter;
+    var bear=WGeo.bearing(mast.location,wtg.location);
+    var nSec=360/cfg.sectorWidth;
+    var sectors=[];
+    for(var i=0;i<nSec;i++){
+      var dir=i*cfg.sectorWidth,dirF=dir-cfg.sectorWidth/2,dirT=dir+cfg.sectorWidth/2;
+      var profile=WGeo.terrainProfile(mast.location,dir,cfg.assessmentRadius,50);
+      var slopes=profile.map(function(p){return Math.abs(p.slope)});
+      var maxSlope=Math.max.apply(null,slopes);
+      var maxSlopeDeg=Math.atan(maxSlope/100)*180/Math.PI;
+      var avgSlope=slopes.reduce(function(a,b){return a+b},0)/slopes.length;
+      var maxElev=Math.max.apply(null,profile.map(function(p){return p.elevation}));
+      var minElev=Math.min.apply(null,profile.map(function(p){return p.elevation}));
+      var elevChange=maxElev-minElev;
+      // Wake check
+      var wakeTurbines=[];
+      for(var j=0;j<allWtgs.length;j++){
+        if(allWtgs[j].id===wtg.id)continue;
+        var wb=WGeo.bearing(mast.location,allWtgs[j].location);
+        var ad=WGeo.angularDeviation(dir,wb);
+        var wd=WGeo.haversine(mast.location,allWtgs[j].location)/allWtgs[j].rotorDiameter;
+        if(ad<=cfg.wakeAngularThreshold&&wd<=cfg.wakeDistanceThresholdD) wakeTurbines.push(allWtgs[j].name);
+      }
+      var isFree=wakeTurbines.length===0;
+      var simplePass=maxSlopeDeg<=cfg.maxSlopeSimple;
+      var complexPass=maxSlopeDeg<=cfg.maxSlopeComplex;
+      var tClass=simplePass?'A':complexPass?'B':'S';
+      var isValid=complexPass;
+      var failures=[];
+      if(!simplePass&&!complexPass)failures.push('Max slope '+maxSlopeDeg.toFixed(1)+' deg exceeds Class S threshold ('+cfg.maxSlopeComplex+' deg).');
+      else if(!simplePass)failures.push('Max slope '+maxSlopeDeg.toFixed(1)+' deg exceeds Class A. Class B.');
+      if(!isFree)failures.push('Wake: '+wakeTurbines.join(', '));
+      sectors.push({direction:dir,directionFrom:dirF,directionTo:dirT,maxSlope:maxSlope,maxSlopeDeg:maxSlopeDeg,avgSlope:avgSlope,
+        maxElevationChange:elevChange,roughness:{z0:0.03,roughnessClass:1,description:'Open agricultural (z0=0.03m)'},
+        isValid:isValid,failureReasons:failures,isFreestream:isFree,wakeAffectedTurbines:wakeTurbines,terrainClass:tClass,
+        slopeCriteria:{simpleTerrainPass:simplePass,complexTerrainPass:complexPass}});
+    }
+    var validSec=sectors.filter(function(s){return s.isValid&&s.isFreestream}).map(function(s){return s.direction});
+    var freeSec=sectors.filter(function(s){return s.isFreestream}).map(function(s){return s.direction});
+    var validSlopes=sectors.filter(function(s){return s.isValid}).map(function(s){return s.maxSlope});
+    var mxVS=validSlopes.length>0?Math.max.apply(null,validSlopes):0;
+    var notes=[];
+    if(sectors.some(function(s){return s.terrainClass==='S'}))notes.push('Complex terrain (Class S). Flow model verification may be required.');
+    else if(sectors.some(function(s){return s.terrainClass==='B'}))notes.push('Moderate terrain (Class B). Standard IEC applies with cautions.');
+    if(distD<cfg.minDistanceD)notes.push('Mast-WTG distance ('+distD.toFixed(1)+'D) below recommended minimum ('+cfg.minDistanceD+'D).');
+    if(freeSec.length<validSec.length*0.5)notes.push('Many valid sectors wake-affected. Consider relocating mast.');
+    var tClassO='A';if(sectors.some(function(s){return s.terrainClass==='S'}))tClassO='S';
+    else if(sectors.some(function(s){return s.terrainClass==='B'}))tClassO='B';
+    return{metadata:{mastId:mast.id,mastName:mast.name,targetWtgId:wtg.id,targetWtgName:wtg.name,
+      assessmentDate:new Date().toISOString().split('T')[0],iecVersion:cfg.iecVersion,sectorWidth:cfg.sectorWidth,assessmentRadius:cfg.assessmentRadius,numSectors:nSec},
+      distance:{meters:dist,rotorDiameters:distD,bearing:bear},sectors:sectors,validSectors:validSec,
+      summary:{terrainClassification:tClassO==='A'?'simple':'complex',terrainClass:tClassO,totalSectors:nSec,
+        validSectorsCount:validSec.length,invalidSectorsCount:nSec-validSec.length,freestreamSectorsCount:freeSec.length,
+        validSectorPercentage:(validSec.length/nSec)*100,maxValidSlope:mxVS,maxValidSlopeDeg:Math.atan(mxVS/100)*180/Math.PI,
+        minDistance:dist,minDistanceInD:distD,isIECCompliant:validSec.length>=nSec*0.25,complianceNotes:notes}};
+  }
+};
+
+/* ── 3. FREESTREAM ENGINE ──────────────────────────────── */
+var WFree={
+  analyze:function(mast,allWtgs,extWtgs,cfg){
+    var sources=allWtgs.concat(extWtgs);var nSec=360/cfg.sectorWidth;
+    var analysis=[],freeDirs=[],wakeDirs=[],extImpact=[];
+    for(var i=0;i<nSec;i++){
+      var dir=i*cfg.sectorWidth,wakes=[];
+      for(var j=0;j<sources.length;j++){
+        var w=sources[j];var d=WGeo.haversine(mast.location,w.location);
+        var b=WGeo.bearing(mast.location,w.location);
+        var ad=WGeo.angularDeviation(dir,b);var dD=d/w.rotorDiameter;
+        if(ad<=cfg.wakeAngularThreshold&&dD<=cfg.wakeDistanceThresholdD){
+          var isExt=extWtgs.some(function(e){return e.id===w.id});
+          wakes.push({wtgId:w.id,wtgName:w.name,distance:d,distanceInD:dD,angularDeviation:ad,isExternal:isExt});
+          if(isExt){
+            var ex=extImpact.find(function(e){return e.id===w.id});
+            if(!ex)extImpact.push({id:w.id,name:w.name,distance:d,distanceInD:dD,affectingSectors:[dir]});
+            else ex.affectingSectors.push(dir);
+          }
+        }
+      }
+      var impact='none';
+      var minD=wakes.length>0?Math.min.apply(null,wakes.map(function(wk){return wk.distanceInD})):Infinity;
+      if(wakes.length===0)impact='none';else if(minD<5||wakes.length>=3)impact='high';
+      else if(minD<10||wakes.length>=2)impact='medium';else impact='low';
+      var isFree=wakes.length===0;
+      if(isFree)freeDirs.push(dir);else wakeDirs.push(dir);
+      analysis.push({direction:dir,isFreestream:isFree,wakeSourceTurbines:wakes,combinedWakeImpact:impact});
+    }
+    return{mastId:mast.id,mastName:mast.name,freestreamSectors:freeDirs,wakeAffectedSectors:wakeDirs,
+      sectorWakeAnalysis:analysis,externalWtgs:extImpact,freestreamPercentage:(freeDirs.length/nSec)*100};
+  }
+};
+
+/* ── 4. PCV OPTIMIZATION ENGINE ────────────────────────── */
+var WPCV={
+  score:function(mast,wtg,allWtgs,cfg){
+    var a=WTerrain.assess(mast,wtg,allWtgs,cfg);
+    var n=a.metadata.numSectors,vs=a.summary.validSectorsCount,fs=a.summary.freestreamSectorsCount;
+    var distD=a.distance.rotorDiameters;
+    var dScore=distD<2?(distD/2*50):distD>10?Math.max(0,100-(distD-10)*5):100;
+    var tScore=(a.summary.validSectorPercentage/100)*100;
+    var cScore=(vs/n)*100;
+    var fScore=(fs/n)*100;
+    var sScore=Math.max(0,100-a.sectors.map(function(s){return s.maxSlopeDeg}).reduce(function(a,b){return a+b},0)/a.sectors.length*5);
+    var score=dScore*0.2+tScore*0.25+cScore*0.2+fScore*0.25+sScore*0.1;
+    return{mastId:mast.id,mastName:mast.name,wtgId:wtg.id,wtgName:wtg.name,distance:a.distance.meters,
+      distanceInD:distD,validSectors:vs,totalSectors:n,freestreamSectors:fs,score:Math.round(score*10)/10,
+      criterionScores:{distance:Math.round(dScore),terrainQuality:Math.round(tScore),sectorCoverage:Math.round(cScore),
+        freestreamQuality:Math.round(fScore),slopeCompliance:Math.round(sScore)},
+      isRecommended:score>=60&&distD>=cfg.minDistanceD&&vs>=n*0.3};
+  },
+  optimize:function(masts,wtgs,cfg){
+    var pairs=[];
+    for(var i=0;i<masts.length;i++)for(var j=0;j<wtgs.length;j++)pairs.push(this.score(masts[i],wtgs[j],wtgs,cfg));
+    pairs.sort(function(a,b){return b.score-a.score});
+    var configs=[];
+    for(var mi=0;mi<masts.length;mi++){
+      var mp=pairs.filter(function(p){return p.mastId===masts[mi].id}).sort(function(a,b){return b.score-a.score});
+      if(mp.length>=1)configs.push({mastId:masts[mi].id,mastName:masts[mi].name,targetWtgs:[{wtgId:mp[0].wtgId,wtgName:mp[0].wtgName,score:mp[0].score,validSectors:mp[0].validSectors}],
+        combinedValidSectors:mp[0].validSectors,combinedFreestreamSectors:mp[0].freestreamSectors,overallScore:mp[0].score,isRecommended:mp[0].isRecommended,notes:['Single WTG PCV']});
+      if(mp.length>=2){
+        var c1=WTerrain.assess(masts[mi],wtgs.find(function(w){return w.id===mp[0].wtgId}),wtgs,cfg);
+        var c2=WTerrain.assess(masts[mi],wtgs.find(function(w){return w.id===mp[1].wtgId}),wtgs,cfg);
+        var combined=new Set(c1.validSectors.concat(c2.validSectors));
+        var combinedFree=new Set(c1.sectors.filter(function(s){return s.isFreestream}).map(function(s){return s.direction}).concat(c2.sectors.filter(function(s){return s.isFreestream}).map(function(s){return s.direction})));
+        var cs=mp[0].score*0.6+mp[1].score*0.4;
+        configs.push({mastId:masts[mi].id,mastName:masts[mi].name,targetWtgs:[{wtgId:mp[0].wtgId,wtgName:mp[0].wtgName,score:mp[0].score,validSectors:mp[0].validSectors},{wtgId:mp[1].wtgId,wtgName:mp[1].wtgName,score:mp[1].score,validSectors:mp[1].validSectors}],
+          combinedValidSectors:combined.size,combinedFreestreamSectors:combinedFree.size,overallScore:Math.round(cs*10)/10,isRecommended:cs>=55&&combined.size>=360/cfg.sectorWidth*0.25,
+          notes:['1 mast -> 2 WTGs: '+mp[0].wtgName+' & '+mp[1].wtgName,'Combined coverage: '+((combined.size/(360/cfg.sectorWidth))*100).toFixed(1)+'%']});
+      }
+    }
+    configs.sort(function(a,b){return b.overallScore-a.overallScore});
+    var recs=[];
+    if(configs.length>0)recs.push('Best mast: '+configs[0].mastName+' (score '+configs[0].overallScore+'/100).');
+    if(configs[0]&&configs[0].targetWtgs.length>1)recs.push('Can test '+configs[0].targetWtgs.length+' WTGs: '+configs[0].targetWtgs.map(function(w){return w.wtgName}).join(' & ')+' simultaneously.');
+    if(pairs.length>0)recs.push('Best pair: '+pairs[0].mastName+' -> '+pairs[0].wtgName+' ('+pairs[0].distanceInD.toFixed(1)+'D, '+pairs[0].score+'/100).');
+    return{bestPairings:pairs.slice(0,10),totalCombinations:pairs.length,configurations:configs,recommendations:recs};
+  }
+};
+
+/* ── 5. SAMPLE DATA ───────────────────────────────────── */
+var Sample={
+  generate:function(){
+    var lat=13.08,lon=77.58,el=850;
+    var wtgs=[
+      {id:'WTG-01',name:'WTG-01',location:{latitude:lat+0.005,longitude:lon+0.002,elevation:el+12},rotorDiameter:126,hubHeight:100,ratedPower:3000,isTarget:true},
+      {id:'WTG-02',name:'WTG-02',location:{latitude:lat+0.010,longitude:lon-0.001,elevation:el+18},rotorDiameter:126,hubHeight:100,ratedPower:3000,isTarget:true},
+      {id:'WTG-03',name:'WTG-03',location:{latitude:lat+0.015,longitude:lon+0.003,elevation:el+25},rotorDiameter:126,hubHeight:100,ratedPower:3000,isTarget:true},
+      {id:'WTG-04',name:'WTG-04',location:{latitude:lat+0.020,longitude:lon+0.001,elevation:el+8},rotorDiameter:126,hubHeight:100,ratedPower:3000,isTarget:false},
+      {id:'WTG-05',name:'WTG-05',location:{latitude:lat-0.002,longitude:lon+0.006,elevation:el+15},rotorDiameter:126,hubHeight:100,ratedPower:3000,isTarget:false},
+      {id:'WTG-06',name:'WTG-06',location:{latitude:lat+0.025,longitude:lon-0.002,elevation:el+30},rotorDiameter:126,hubHeight:100,ratedPower:3000,isTarget:false},
+      {id:'WTG-07',name:'WTG-07',location:{latitude:lat+0.008,longitude:lon+0.008,elevation:el+5},rotorDiameter:126,hubHeight:100,ratedPower:3000,isTarget:false},
+      {id:'WTG-08',name:'WTG-08',location:{latitude:lat+0.003,longitude:lon-0.003,elevation:el+22},rotorDiameter:126,hubHeight:100,ratedPower:3000,isTarget:true}
+    ];
+    var masts=[
+      {id:'MM-01',name:'Met Mast 01',location:{latitude:lat+0.002,longitude:lon+0.005,elevation:el+10},mastHeight:120,type:'lattice'},
+      {id:'MM-02',name:'Met Mast 02',location:{latitude:lat+0.012,longitude:lon+0.006,elevation:el+20},mastHeight:100,type:'lattice'}
+    ];
+    var ext=[
+      {id:'EXT-01',name:'EXT-Alpha-01',location:{latitude:lat+0.035,longitude:lon-0.015,elevation:el+35},rotorDiameter:100,hubHeight:90,ratedPower:2000,isTarget:false},
+      {id:'EXT-02',name:'EXT-Alpha-02',location:{latitude:lat+0.040,longitude:lon-0.010,elevation:el+40},rotorDiameter:100,hubHeight:90,ratedPower:2000,isTarget:false},
+      {id:'EXT-03',name:'EXT-Alpha-03',location:{latitude:lat+0.045,longitude:lon-0.015,elevation:el+42},rotorDiameter:100,hubHeight:90,ratedPower:2000,isTarget:false},
+      {id:'EXT-04',name:'EXT-Alpha-04',location:{latitude:lat+0.040,longitude:lon-0.020,elevation:el+38},rotorDiameter:100,hubHeight:90,ratedPower:2000,isTarget:false}
+    ];
+    return{masts:masts,wtgs:wtgs,externalWtgs:ext};
+  }
+};
+
+/* ── 6. APP STATE & UI ─────────────────────────────────── */
+var APP={
+  masts:[],wtgs:[],extWtgs:[],results:null,config:{},selectedPair:0,selectedMastFree:0,
+  init:function(){
+    this.config={iecVersion:'IEC-61400-12-1-2017',sectorWidth:10,assessmentRadius:5000,minDistanceD:2,maxSlopeSimple:10,maxSlopeComplex:17,wakeAngularThreshold:30,wakeDistanceThresholdD:20};
+    this.bindEvents();this.observeReveal();
+  },
+  bindEvents:function(){
+    var self=this;
+    // Tabs
+    document.querySelectorAll('.tool-tab').forEach(function(tab){
+      tab.addEventListener('click',function(){
+        document.querySelectorAll('.tool-tab').forEach(function(t){t.classList.remove('active')});
+        document.querySelectorAll('.tool-panel').forEach(function(p){p.classList.remove('active')});
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+        if(this.dataset.tab==='tab-map'&&self.wtgs.length>0)setTimeout(function(){self.drawMap()},100);
+      });
+    });
+    // Demo
+    document.getElementById('btnDemo').addEventListener('click',function(){self.loadDemo()});
+    // Run
+    document.getElementById('btnRun').addEventListener('click',function(){self.runAnalysis()});
+    // Clear
+    document.getElementById('btnClear').addEventListener('click',function(){self.clearAll()});
+    // CSV
+    document.getElementById('mastFile').addEventListener('change',function(e){self.parseCSV(e,'mast')});
+    document.getElementById('wtgFile').addEventListener('change',function(e){self.parseCSV(e,'wtg')});
+    document.getElementById('extFile').addEventListener('change',function(e){self.parseCSV(e,'ext')});
+    // Report
+    document.getElementById('btnGenReport').addEventListener('click',function(){self.genReport()});
+    document.getElementById('btnExportCSV').addEventListener('click',function(){self.exportCSV()});
+    document.getElementById('btnPrint').addEventListener('click',function(){window.print()});
+  },
+  observeReveal:function(){
+    var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('in')})},{threshold:.1});
+    document.querySelectorAll('#tools .rv').forEach(function(r){obs.observe(r)});
+  },
+  readConfig:function(){
+    this.config.iecVersion=document.getElementById('cfgIEC').value;
+    this.config.sectorWidth=parseInt(document.getElementById('cfgSector').value);
+    this.config.assessmentRadius=parseInt(document.getElementById('cfgRadius').value);
+    this.config.minDistanceD=parseInt(document.getElementById('cfgMinD').value);
+  },
+  loadDemo:function(){
+    var d=Sample.generate();
+    this.masts=d.masts;this.wtgs=d.wtgs;this.extWtgs=d.externalWtgs;
+    this.renderDataLists();this.drawMap();
+    this.showAlert('success','Demo data loaded: '+this.masts.length+' masts, '+this.wtgs.length+' WTGs, '+this.extWtgs.length+' external WTGs.');
+  },
+  parseCSV:function(e,type){
+    var self=this;var file=e.target.files[0];if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      var text=ev.target.result;var lines=text.trim().split('\n');
+      if(lines.length<2){self.showAlert('error','CSV must have header + data rows.');return}
+      var headers=lines[0].split(',').map(function(h){return h.trim().toLowerCase()});
+      var errors=[];
+      if(type==='mast'){
+        var req=['name','latitude','longitude','mastheight'];
+        for(var i=0;i<req.length;i++)if(headers.indexOf(req[i])<0)errors.push('Missing: '+req[i]);
+        if(errors.length){self.showAlert('error',errors.join(', '));return}
+        for(var li=1;li<lines.length;li++){
+          var v=lines[li].split(',').map(function(x){return x.trim()});if(v.length<4)continue;
+          var lat=parseFloat(v[headers.indexOf('latitude')]),lon=parseFloat(v[headers.indexOf('longitude')]),mh=parseFloat(v[headers.indexOf('mastheight')]);
+          if(isNaN(lat)||isNaN(lon)||isNaN(mh))continue;
+          self.masts.push({id:'MM-'+String(self.masts.length+1).padStart(2,'0'),name:v[headers.indexOf('name')]||'MM-'+(self.masts.length+1),
+            location:{latitude:lat,longitude:lon},mastHeight:mh,type:v[headers.indexOf('type')]||'lattice'});
+        }
+      }else{
+        var req2=['name','latitude','longitude','rotordiameter','hubheight'];
+        for(var i=0;i<req2.length;i++)if(headers.indexOf(req2[i])<0)errors.push('Missing: '+req2[i]);
+        if(errors.length){self.showAlert('error',errors.join(', '));return}
+        for(var li=1;li<lines.length;li++){
+          var v=lines[li].split(',').map(function(x){return x.trim()});if(v.length<5)continue;
+          var lat=parseFloat(v[headers.indexOf('latitude')]),lon=parseFloat(v[headers.indexOf('longitude')]),rd=parseFloat(v[headers.indexOf('rotordiameter')]),hh=parseFloat(v[headers.indexOf('hubheight')]);
+          if(isNaN(lat)||isNaN(lon)||isNaN(rd)||isNaN(hh))continue;
+          var it=v[headers.indexOf('istarget')];if(it)it=it.toLowerCase();
+          var isT=it!=='false'&&it!=='0'&&it!=='no';
+          var obj={id:(type==='ext'?'EXT-':'WTG-')+String(type==='ext'?self.extWtgs.length:self.wtgs.length+1).padStart(2,'0'),
+            name:v[headers.indexOf('name')]||(type==='ext'?'EXT-':'WTG-')+(type==='ext'?self.extWtgs.length+1:self.wtgs.length+1),
+            location:{latitude:lat,longitude:lon},rotorDiameter:rd,hubHeight:hh,
+            ratedPower:parseFloat(v[headers.indexOf('ratedpower')])||undefined,isTarget:type!=='ext'?isT:false};
+          if(type==='ext')self.extWtgs.push(obj);else self.wtgs.push(obj);
+        }
+      }
+      self.renderDataLists();self.drawMap();
+      self.showAlert('success','Loaded '+(type==='mast'?self.masts.length:type==='ext'?self.extWtgs.length:self.wtgs.length)+' '+type+' records from CSV.');
+    };
+    reader.readAsText(file);e.target.value='';
+  },
+  renderDataLists:function(){
+    var self=this;
+    var ml=document.getElementById('mastDataList');
+    ml.innerHTML=this.masts.map(function(m,i){return '<div class="tool-data-row"><span style="font-size:.78rem;color:rgba(255,255,255,.65)"><strong style="color:#e74c3c">&#9650;</strong> '+m.name+' <span style="opacity:.4">('+m.location.latitude.toFixed(4)+', '+m.location.longitude.toFixed(4)+') '+m.mastHeight+'m</span></span><button class="tool-remove" data-type="mast" data-idx="'+i+'">&times;</button></div>'}).join('');
+    var wl=document.getElementById('wtgDataList');
+    wl.innerHTML=this.wtgs.map(function(w,i){return '<div class="tool-data-row"><span style="font-size:.78rem;color:rgba(255,255,255,.65)"><strong style="color:#2d9cce">&#9679;</strong> '+w.name+(w.isTarget?' <span class="tool-badge valid">target</span>':'')+' <span style="opacity:.4">D='+w.rotorDiameter+'m H='+w.hubHeight+'m</span></span><button class="tool-remove" data-type="wtg" data-idx="'+i+'">&times;</button></div>'}).join('');
+    var el=document.getElementById('extDataList');
+    el.innerHTML=this.extWtgs.map(function(w,i){return '<div class="tool-data-row"><span style="font-size:.78rem;color:rgba(255,255,255,.65)"><strong style="color:#f0a500">&#9670;</strong> '+w.name+' <span style="opacity:.4">D='+w.rotorDiameter+'m H='+w.hubHeight+'m</span></span><button class="tool-remove" data-type="ext" data-idx="'+i+'">&times;</button></div>'}).join('');
+    document.querySelectorAll('.tool-remove').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var t=this.dataset.type,idx=parseInt(this.dataset.idx);
+        if(t==='mast')self.masts.splice(idx,1);else if(t==='wtg')self.wtgs.splice(idx,1);else self.extWtgs.splice(idx,1);
+        self.renderDataLists();self.drawMap();
+      });
+    });
+  },
+  showAlert:function(type,msg){
+    var el=document.getElementById('toolErrors');
+    el.innerHTML='<div class="tool-alert '+type+'">'+msg+'</div>';
+    setTimeout(function(){el.innerHTML=''},8000);
+  },
+  clearAll:function(){
+    this.masts=[];this.wtgs=[];this.extWtgs=[];this.results=null;
+    this.renderDataLists();
+    document.getElementById('terrainContent').innerHTML='<div class="tool-alert info">Run the analysis to see terrain assessment results.</div>';
+    document.getElementById('pcvContent').innerHTML='<div class="tool-alert info">Run the analysis to see PCV selection results.</div>';
+    document.getElementById('freeContent').innerHTML='<div class="tool-alert info">Run the analysis to see freestream analysis results.</div>';
+    document.getElementById('reportContent').innerHTML='<div class="tool-alert info">Run the analysis and click "Generate Report".</div>';
+    document.getElementById('toolErrors').innerHTML='';
+  },
+  runAnalysis:function(){
+    if(this.masts.length===0){this.showAlert('error','Please add at least one meteorological mast.');return}
+    if(this.wtgs.length===0){this.showAlert('error','Please add at least one WTG.');return}
+    this.readConfig();
+    var self=this;var targetWtgs=this.wtgs.filter(function(w){return w.isTarget});
+    if(targetWtgs.length===0)targetWtgs=this.wtgs;
+    // Terrain
+    var terrainResults=[];
+    for(var i=0;i<this.masts.length;i++){for(var j=0;j<targetWtgs.length;j++){
+      terrainResults.push(WTerrain.assess(this.masts[i],targetWtgs[j],this.wtgs,this.config));
+    }}
+    // Freestream
+    var freestreamResults=[];
+    for(var i=0;i<this.masts.length;i++){freestreamResults.push(WFree.analyze(this.masts[i],this.wtgs,this.extWtgs,this.config))}
+    // PCV
+    var pcvResults=WPCV.optimize(this.masts,targetWtgs,this.config);
+    this.results={terrain:terrainResults,freestream:freestreamResults,pcv:pcvResults,targetWtgs:targetWtgs};
+    this.renderTerrain();this.renderPCV();this.renderFreestream();this.drawMap();
+    this.showAlert('success','Analysis complete! '+terrainResults.length+' pairings assessed, '+pcvResults.bestPairings.length+' ranked.');
+    // Switch to terrain tab
+    document.querySelectorAll('.tool-tab').forEach(function(t){t.classList.remove('active')});
+    document.querySelectorAll('.tool-panel').forEach(function(p){p.classList.remove('active')});
+    document.querySelector('[data-tab="tab-terrain"]').classList.add('active');
+    document.getElementById('tab-terrain').classList.add('active');
+  },
+
+  /* ── TERRAIN TAB ──────────────────────────────────── */
+  renderTerrain:function(){
+    if(!this.results)return;
+    var r=this.results,el=document.getElementById('terrainContent');
+    var h='<div class="tool-fgroup"><label class="tool-label">Select Mast -> WTG Pair</label><select class="tool-select" id="terrainPairSelect" style="max-width:500px">';
+    for(var i=0;i<r.terrain.length;i++){h+='<option value="'+i+'">'+r.terrain[i].metadata.mastName+' -> '+r.terrain[i].metadata.targetWtgName+' ('+r.terrain[i].distance.rotorDiameters.toFixed(1)+'D)</option>'}
+    h+='</select></div>';
+    el.innerHTML=h;
+    this.selectedPair=0;
+    var self=this;
+    document.getElementById('terrainPairSelect').addEventListener('change',function(){self.selectedPair=parseInt(this.value);self.renderTerrainDetails()});
+    this.renderTerrainDetails();
+  },
+  renderTerrainDetails:function(){
+    if(!this.results)return;
+    var t=this.results.terrain[this.selectedPair],s=t.summary;
+    var h='<div class="tool-metrics"><div class="tool-metric"><span class="tool-metric-n">'+t.distance.rotorDiameters.toFixed(1)+'</span><span class="tool-metric-l">Distance (D)</span></div>';
+    h+='<div class="tool-metric"><span class="tool-metric-n">'+s.terrainClass+'</span><span class="tool-metric-l">Terrain Class</span></div>';
+    h+='<div class="tool-metric"><span class="tool-metric-n '+(s.validSectorPercentage>=50?'':'warn')+'">'+s.validSectorsCount+'/'+s.totalSectors+'</span><span class="tool-metric-l">Valid Sectors</span></div>';
+    h+='<div class="tool-metric"><span class="tool-metric-n">'+s.validSectorPercentage.toFixed(1)+'%</span><span class="tool-metric-l">Coverage</span></div></div>';
+    h+='<div class="tool-progress" style="margin-bottom:1.5rem"><div class="tool-progress-bar" style="width:'+s.validSectorPercentage+'%;background:linear-gradient(90deg,#1db87e,'+(s.validSectorPercentage>=50?'#1db87e':'#f0a500')+')"></div></div>';
+    h+='<div class="tool-grid"><div class="tool-col"><div class="tool-section-title">Sector Classification (Polar Plot)</div><div class="tool-canvas-wrap"><canvas id="polarCanvas" width="500" height="500"></canvas></div></div>';
+    h+='<div class="tool-col"><div class="tool-section-title">Terrain Profile (Selected Sector)</div><div class="tool-fgroup"><label class="tool-label">Sector Direction</label><select class="tool-select" id="profileDirSelect">';
+    for(var i=0;i<t.sectors.length;i++){h+='<option value="'+i+'">'+t.sectors[i].direction+' deg'+(t.sectors[i].isValid?'':' [INVALID]')+'</option>'}
+    h+='</select></div><div class="tool-canvas-wrap"><canvas id="profileCanvas" width="550" height="320"></canvas></div></div></div>';
+    h+='<div class="tool-section-title" style="margin-top:2rem">Detailed Sector Analysis</div>';
+    h+='<div class="tool-table-scroll"><table class="tool-table"><thead><tr><th>Dir</th><th>Max Slope (%)</th><th>Max Slope (deg)</th><th>Class</th><th>Valid</th><th>Freestream</th><th>Wake Sources</th><th>Failure Reasons</th></tr></thead><tbody>';
+    for(var i=0;i<t.sectors.length;i++){var sc=t.sectors[i];
+      h+='<tr><td><strong>'+sc.direction+'</strong></td><td>'+sc.maxSlope.toFixed(1)+'</td><td>'+sc.maxSlopeDeg.toFixed(1)+'</td>';
+      h+='<td><span class="tool-badge '+(sc.terrainClass==='A'?'valid':sc.terrainClass==='B'?'warn':'invalid')+'">'+sc.terrainClass+'</span></td>';
+      h+='<td><span class="tool-badge '+(sc.isValid?'valid':'invalid')+'">'+(sc.isValid?'Yes':'No')+'</span></td>';
+      h+='<td><span class="tool-badge '+(sc.isFreestream?'valid':'warn')+'">'+(sc.isFreestream?'Yes':'No')+'</span></td>';
+      h+='<td>'+(sc.wakeAffectedTurbines.length>0?sc.wakeAffectedTurbines.join(', '):'-')+'</td>';
+      h+='<td style="color:'+(sc.failureReasons.length>0?'#e74c3c':'rgba(255,255,255,.3)')+'">'+(sc.failureReasons.length>0?sc.failureReasons[0]:'-')+'</td></tr>';
+    }
+    h+='</tbody></table></div>';
+    if(s.complianceNotes.length>0){h+='<div style="margin-top:1rem">';for(var i=0;i<s.complianceNotes.length;i++)h+='<div class="tool-alert warning">'+s.complianceNotes[i]+'</div>';h+='</div>'}
+    el.innerHTML=document.getElementById('terrainContent').innerHTML.replace(/<select class="tool-select" id="terrainPairSelect"[\s\S]*?<\/select>/,el.querySelector('#terrainPairSelect')?el.querySelector('#terrainPairSelect').outerHTML:'')+h.replace(/^[\s\S]*?<\/select>/,'') ;
+    // Actually let's just rebuild the whole thing
+    var el2=document.getElementById('terrainContent');
+    var fullH='<div class="tool-fgroup"><label class="tool-label">Select Mast -> WTG Pair</label><select class="tool-select" id="terrainPairSelect" style="max-width:500px">';
+    for(var i=0;i<this.results.terrain.length;i++){fullH+='<option value="'+i+'"'+(i===this.selectedPair?' selected':'')+'>'+this.results.terrain[i].metadata.mastName+' -> '+this.results.terrain[i].metadata.targetWtgName+' ('+this.results.terrain[i].distance.rotorDiameters.toFixed(1)+'D)</option>'}
+    fullH+='</select></div>'+h.substring(h.indexOf('<div class="tool-metrics">'));
+    el2.innerHTML=fullH;
+    var self=this;
+    document.getElementById('terrainPairSelect').addEventListener('change',function(){self.selectedPair=parseInt(this.value);self.renderTerrainDetails()});
+    setTimeout(function(){self.drawPolar(t);self.drawProfile(t,0)},50);
+    document.getElementById('profileDirSelect').addEventListener('change',function(){self.drawProfile(t,parseInt(this.value))});
+  },
+  drawPolar:function(t){
+    var c=document.getElementById('polarCanvas');if(!c)return;
+    var ctx=c.getContext('2d'),w=c.width,h=c.height,cx=w/2,cy=h/2,r=Math.min(w,h)*0.38;
+    ctx.clearRect(0,0,w,h);
+    // Grid circles
+    ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
+    for(var i=1;i<=5;i++){ctx.beginPath();ctx.arc(cx,cy,r*(i/5),0,Math.PI*2);ctx.stroke()}
+    // Direction lines
+    for(var i=0;i<36;i++){var a=(i*10-90)*Math.PI/180;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.stroke()}
+    // Sector wedges
+    var sw=t.metadata.sectorWidth*Math.PI/180;
+    for(var i=0;i<t.sectors.length;i++){
+      var sc=t.sectors[i];var a=(sc.direction-90)*Math.PI/180;
+      var a1=a-sw/2,a2=a+sw/2;
+      var col=sc.isValid&&sc.isFreestream?'rgba(29,184,126,0.7)':sc.isValid?'rgba(240,165,0,0.7)':'rgba(231,76,60,0.5)';
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a1,a2);ctx.closePath();ctx.fillStyle=col;ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=0.5;ctx.stroke();
+    }
+    // Direction labels
+    ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='10px "Open Sans",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    var dirs=['N','NE','E','SE','S','SW','W','NW'];
+    for(var i=0;i<8;i++){var a=(i*45-90)*Math.PI/180;ctx.fillText(dirs[i],cx+Math.cos(a)*(r+18),cy+Math.sin(a)*(r+18))}
+    // Bearing arrow
+    var ba=(t.distance.bearing-90)*Math.PI/180;
+    ctx.strokeStyle='#f0a500';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(ba)*(r*0.8),cy+Math.sin(ba)*(r*0.8));ctx.stroke();
+    ctx.setLineDash([]);
+    // Center dot
+    ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+    // Legend
+    var ly=h-30;ctx.font='9px "Open Sans",sans-serif';ctx.textAlign='left';
+    ctx.fillStyle='rgba(29,184,126,0.7)';ctx.fillRect(10,ly,10,10);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.fillText('Valid + Freestream',24,ly+8);
+    ctx.fillStyle='rgba(240,165,0,0.7)';ctx.fillRect(140,ly,10,10);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.fillText('Valid, Wake-Affected',154,ly+8);
+    ctx.fillStyle='rgba(231,76,60,0.5)';ctx.fillRect(300,ly,10,10);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.fillText('Invalid',314,ly+8);
+  },
+  drawProfile:function(t,idx){
+    var c=document.getElementById('profileCanvas');if(!c)return;
+    var ctx=c.getContext('2d'),w=c.width,h=c.height;
+    var profile=WGeo.terrainProfile(t.metadata.mastName?{latitude:0,longitude:0}:null,idx===undefined?0:t.sectors[idx].direction,this.config.assessmentRadius,50);
+    // Regenerate from mast location
+    var mast=null;for(var i=0;i<this.masts.length;i++){if(this.masts[i].id===t.metadata.mastId){mast=this.masts[i];break}}
+    if(mast)profile=WGeo.terrainProfile(mast.location,t.sectors[idx].direction,this.config.assessmentRadius,50);
+    ctx.clearRect(0,0,w,h);
+    var pad={t:30,r:20,b:40,l:50};var pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
+    var maxD=profile[profile.length-1].distance;
+    var elevs=profile.map(function(p){return p.elevation});
+    var minE=Math.min.apply(null,elevs)-5,maxE=Math.max.apply(null,elevs)+5;
+    var rangeE=maxE-minE||1;
+    // Background
+    ctx.fillStyle='rgba(11,31,58,0.5)';ctx.fillRect(pad.l,pad.t,pw,ph);
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=0.5;
+    for(var i=0;i<=5;i++){var y=pad.t+ph*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke()}
+    // Max slope threshold lines
+    var slopeThreshSimple=this.config.maxSlopeSimple;
+    ctx.strokeStyle='rgba(29,184,126,0.4)';ctx.lineWidth=1;ctx.setLineDash([5,5]);
+    ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l+pw,pad.t+ph*tanDeg(slopeThreshSimple)*(maxD/this.config.assessmentRadius));ctx.stroke();
+    ctx.strokeStyle='rgba(231,76,60,0.4)';
+    ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l+pw,pad.t+ph*tanDeg(this.config.maxSlopeComplex)*(maxD/this.config.assessmentRadius));ctx.stroke();
+    ctx.setLineDash([]);
+    // Elevation line
+    ctx.strokeStyle='#2d9cce';ctx.lineWidth=2;ctx.beginPath();
+    for(var i=0;i<profile.length;i++){
+      var x=pad.l+(profile[i].distance/maxD)*pw,y=pad.t+ph-((profile[i].elevation-minE)/rangeE)*ph;
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    // Fill under curve
+    ctx.lineTo(pad.l+pw,pad.t+ph);ctx.lineTo(pad.l,pad.t+ph);ctx.closePath();
+    var grad=ctx.createLinearGradient(0,pad.t,0,pad.t+ph);
+    grad.addColorStop(0,'rgba(45,156,206,0.2)');grad.addColorStop(1,'rgba(45,156,206,0)');
+    ctx.fillStyle=grad;ctx.fill();
+    // Axes
+    ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+ph);ctx.lineTo(pad.l+pw,pad.t+ph);ctx.stroke();
+    // Labels
+    ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font='9px "Open Sans",sans-serif';ctx.textAlign='center';
+    for(var i=0;i<=5;i++){var x=pad.l+pw*(i/5);ctx.fillText(Math.round(maxD*i/5)+'m',x,pad.t+ph+15)}
+    ctx.textAlign='right';
+    for(var i=0;i<=5;i++){var y=pad.t+ph*(i/5);ctx.fillText(Math.round(maxE-rangeE*(i/5))+'m',pad.l-8,y+3)}
+    ctx.fillStyle='rgba(255,255,255,0.3)';ctx.textAlign='center';
+    ctx.fillText('Distance (m)',pad.l+pw/2,h-5);ctx.save();ctx.translate(12,pad.t+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText('Elevation (m)',0,0);ctx.restore();
+    // Title
+    ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='bold 10px "Open Sans",sans-serif';ctx.textAlign='left';
+    ctx.fillText('Sector: '+t.sectors[idx].direction+' deg | Max Slope: '+t.sectors[idx].maxSlopeDeg.toFixed(1)+' deg | Class: '+t.sectors[idx].terrainClass,pad.l,18);
+    // Legend
+    ctx.font='9px "Open Sans",sans-serif';ctx.textAlign='left';
+    ctx.fillStyle='rgba(29,184,126,0.5)';ctx.fillText('--- Class A ('+this.config.maxSlopeSimple+' deg)',pad.l+pw-180,pad.t+15);
+    ctx.fillStyle='rgba(231,76,60,0.5)';ctx.fillText('--- Class S ('+this.config.maxSlopeComplex+' deg)',pad.l+pw-180,pad.t+28);
+
+    function tanDeg(d){return Math.tan(d*Math.PI/180)}
+  },
+
+  /* ── PCV TAB ──────────────────────────────────────── */
+  renderPCV:function(){
+    if(!this.results)return;
+    var p=this.results.pcv,el=document.getElementById('pcvContent');
+    var h='<div class="tool-section-title">Recommended Configuration</div>';
+    for(var i=0;i<p.recommendations.length;i++)h+='<div class="tool-alert success">'+p.recommendations[i]+'</div>';
+    h+='<div class="tool-section-title" style="margin-top:2rem">All Mast-WTG Pairings (Ranked)</div>';
+    h+='<div class="tool-table-scroll"><table class="tool-table"><thead><tr><th>Rank</th><th>Mast</th><th>WTG</th><th>Distance</th><th>Score</th><th>Valid Sectors</th><th>Freestream</th><th>Recommended</th></tr></thead><tbody>';
+    for(var i=0;i<p.bestPairings.length;i++){
+      var pr=p.bestPairings[i];
+      h+='<tr><td>'+(i+1)+'</td><td>'+pr.mastName+'</td><td>'+pr.wtgName+'</td><td>'+pr.distanceInD.toFixed(1)+'D</td>';
+      h+='<td><div style="display:flex;align-items:center;gap:.5rem"><strong>'+(pr.score)+'</strong><div class="tool-score-bar" style="width:80px"><div class="tool-score-fill" style="width:'+pr.score+'%;background:'+(pr.score>=70?'#1db87e':pr.score>=50?'#f0a500':'#e74c3c')+'"></div></div></div></td>';
+      h+='<td>'+pr.validSectors+'/'+pr.totalSectors+'</td><td>'+pr.freestreamSectors+'</td>';
+      h+='<td>'+(pr.isRecommended?'<span class="tool-badge valid">Yes</span>':'<span class="tool-badge invalid">No</span>')+'</td></tr>';
+    }
+    h+='</tbody></table></div>';
+    h+='<div class="tool-section-title" style="margin-top:2rem">Mast Configurations (1 Mast -> N WTGs)</div>';
+    h+='<div class="tool-grid">';
+    for(var i=0;i<p.configurations.length;i++){
+      var cf=p.configurations[i];
+      h+='<div class="tool-card" style="border-color:'+(cf.isRecommended?'rgba(29,184,126,.4)':'var(--border)')+'">';
+      if(cf.isRecommended)h+='<div style="font-size:.6rem;color:var(--mint);font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Recommended</div>';
+      h+='<div style="font-family:var(--display);font-size:1.1rem;font-style:italic;color:#fff;margin-bottom:.5rem">'+cf.mastName+'</div>';
+      h+='<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:1rem">Testing '+cf.targetWtgs.length+' WTG'+(cf.targetWtgs.length>1?'s':'')+'</div>';
+      for(var j=0;j<cf.targetWtgs.length;j++){h+='<div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.78rem;color:rgba(255,255,255,.6)"><span>'+cf.targetWtgs[j].wtgName+'</span><span style="color:var(--mint)">'+cf.targetWtgs[j].score+'/100</span></div>'}
+      h+='<div style="margin-top:1rem;padding-top:.7rem;border-top:1px solid var(--border);font-size:.72rem;color:rgba(255,255,255,.4)">';
+      h+='Combined valid: '+cf.combinedValidSectors+' | Freestream: '+cf.combinedFreestreamSectors+' | Score: '+cf.overallScore+'/100';
+      h+='</div></div>';
+    }
+    h+='</div>';
+    el.innerHTML=h;
+  },
+
+  /* ── FREESTREAM TAB ───────────────────────────────── */
+  renderFreestream:function(){
+    if(!this.results)return;
+    var f=this.results.freestream;
+    if(!f||f.length===0)return;
+    var el=document.getElementById('freeContent');
+    var selH='<div class="tool-fgroup"><label class="tool-label">Select Mast</label><select class="tool-select" id="freeMastSelect" style="max-width:400px">';
+    for(var i=0;i<f.length;i++){selH+='<option value="'+i+'"'+(i===this.selectedMastFree?' selected':'')+'>'+f[i].mastName+'</option>'}
+    selH+='</select></div>';
+    var fr=f[this.selectedMastFree];
+    var h=selH;
+    h+='<div class="tool-metrics"><div class="tool-metric"><span class="tool-metric-n">'+fr.freestreamSectors.length+'</span><span class="tool-metric-l">Freestream Sectors</span></div>';
+    h+='<div class="tool-metric"><span class="tool-metric-n">'+fr.wakeAffectedSectors.length+'</span><span class="tool-metric-l">Wake-Affected</span></div>';
+    h+='<div class="tool-metric"><span class="tool-metric-n">'+fr.freestreamPercentage.toFixed(1)+'%</span><span class="tool-metric-l">Freestream %</span></div>';
+    h+='<div class="tool-metric"><span class="tool-metric-n">'+fr.externalWtgs.length+'</span><span class="tool-metric-l">External WTGs</span></div></div>';
+    // Wake rose canvas
+    h+='<div class="tool-grid"><div class="tool-col"><div class="tool-section-title">Wake Impact Rose</div><div class="tool-canvas-wrap"><canvas id="wakeCanvas" width="500" height="500"></canvas></div></div>';
+    // External WTG table
+    h+='<div class="tool-col"><div class="tool-section-title">External WTG Wake Sources</div>';
+    if(fr.externalWtgs.length>0){
+      h+='<div class="tool-table-scroll"><table class="tool-table"><thead><tr><th>WTG</th><th>Distance</th><th>Distance (D)</th><th>Affected Sectors</th></tr></thead><tbody>';
+      for(var i=0;i<fr.externalWtgs.length;i++){var ew=fr.externalWtgs[i];
+        h+='<tr><td>'+ew.name+'</td><td>'+ew.distance.toFixed(0)+'m</td><td>'+ew.distanceInD.toFixed(1)+'D</td><td>'+ew.affectingSectors.join(', ')+' deg</td></tr>'}
+      h+='</tbody></table></div>';
+    }else{h+='<div class="tool-alert info">No external WTGs affecting this mast.</div>'}
+    h+='</div></div>';
+    // Sector breakdown
+    h+='<div class="tool-section-title" style="margin-top:1.5rem">Sector-by-Sector Wake Breakdown</div>';
+    h+='<div class="tool-table-scroll"><table class="tool-table"><thead><tr><th>Dir</th><th>Status</th><th>Impact</th><th>Wake Sources</th></tr></thead><tbody>';
+    for(var i=0;i<fr.sectorWakeAnalysis.length;i++){var sw=fr.sectorWakeAnalysis[i];
+      h+='<tr><td><strong>'+sw.direction+'</strong></td>';
+      h+='<td><span class="tool-badge '+(sw.isFreestream?'valid':'warn')+'">'+(sw.isFreestream?'Freestream':'Wake-Affected')+'</span></td>';
+      h+='<td><span class="tool-badge '+(sw.combinedWakeImpact==='none'?'valid':sw.combinedWakeImpact==='low'?'warn':sw.combinedWakeImpact==='medium'?'warn':'invalid')+'">'+sw.combinedWakeImpact+'</span></td>';
+      h+='<td>'+(sw.wakeSourceTurbines.length>0?sw.wakeSourceTurbines.map(function(wk){return wk.wtgName+' ('+wk.distanceInD.toFixed(1)+'D '+wk.angularDeviation.toFixed(0)+' deg)'}).join(', '):'-')+'</td></tr>'}
+    h+='</tbody></table></div>';
+    el.innerHTML=h;
+    var self=this;
+    document.getElementById('freeMastSelect').addEventListener('change',function(){self.selectedMastFree=parseInt(this.value);self.renderFreestream()});
+    setTimeout(function(){self.drawWakeRose(fr)},50);
+  },
+  drawWakeRose:function(fr){
+    var c=document.getElementById('wakeCanvas');if(!c)return;
+    var ctx=c.getContext('2d'),w=c.width,h=c.height,cx=w/2,cy=h/2,r=Math.min(w,h)*0.38;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;
+    for(var i=1;i<=5;i++){ctx.beginPath();ctx.arc(cx,cy,r*(i/5),0,Math.PI*2);ctx.stroke()}
+    for(var i=0;i<36;i++){var a=(i*10-90)*Math.PI/180;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.stroke()}
+    var sw=this.config.sectorWidth*Math.PI/180;
+    var colors={none:'rgba(29,184,126,0.6)',low:'rgba(240,165,0,0.5)',medium:'rgba(240,120,0,0.6)',high:'rgba(231,76,60,0.6)'};
+    for(var i=0;i<fr.sectorWakeAnalysis.length;i++){var s=fr.sectorWakeAnalysis[i];
+      var a=(s.direction-90)*Math.PI/180,a1=a-sw/2,a2=a+sw/2;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a1,a2);ctx.closePath();ctx.fillStyle=colors[s.combinedWakeImpact];ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,0.2)';ctx.lineWidth=0.5;ctx.stroke();
+    }
+    ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='10px "Open Sans",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    var dirs=['N','NE','E','SE','S','SW','W','NW'];
+    for(var i=0;i<8;i++){var a=(i*45-90)*Math.PI/180;ctx.fillText(dirs[i],cx+Math.cos(a)*(r+18),cy+Math.sin(a)*(r+18))}
+    ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+    // Legend
+    var ly=h-40;ctx.font='9px "Open Sans",sans-serif';ctx.textAlign='left';
+    var labels=[['Freestream','none'],['Low Wake','low'],['Medium Wake','medium'],['High Wake','high']];
+    for(var i=0;i<labels.length;i++){
+      var lx=10+i*110;
+      ctx.fillStyle=colors[labels[i][1]];ctx.fillRect(lx,ly,10,10);
+      ctx.fillStyle='rgba(255,255,255,0.5)';ctx.fillText(labels[i][0],lx+14,ly+8);
+    }
+  },
+
+  /* ── SITE MAP ─────────────────────────────────────── */
+  drawMap:function(){
+    var c=document.getElementById('mapCanvas');if(!c)return;
+    var ctx=c.getContext('2d'),w=c.width,h=c.height;
+    ctx.clearRect(0,0,w,h);
+    if(this.masts.length===0&&this.wtgs.length===0)return;
+    var allPts=this.masts.map(function(m){return m.location}).concat(this.wtgs.map(function(w){return w.location})).concat(this.extWtgs.map(function(w){return w.location}));
+    var lats=allPts.map(function(p){return p.latitude}),lons=allPts.map(function(p){return p.longitude});
+    var minLat=Math.min.apply(null,lats),maxLat=Math.max.apply(null,lats),minLon=Math.min.apply(null,lons),maxLon=Math.max.apply(null,lons);
+    var pad=60;var rangeLat=maxLat-minLat||0.01,rangeLon=maxLon-minLon||0.01;
+    var scale=Math.min((w-2*pad)/rangeLon,(h-2*pad)/rangeLat)*0.0008;
+    function toX(lon){return pad+((lon-minLon)/rangeLon)*(w-2*pad)}
+    function toY(lat){return h-pad-((lat-minLat)/rangeLat)*(h-2*pad)}
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+    for(var i=0;i<10;i++){var x=pad+(w-2*pad)*(i/9);ctx.beginPath();ctx.moveTo(x,pad);ctx.lineTo(x,h-pad);ctx.stroke();
+      var y=pad+(h-2*pad)*(i/9);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}
+    // Distance lines (mast to target WTGs)
+    ctx.strokeStyle='rgba(45,156,206,0.2)';ctx.lineWidth=1;ctx.setLineDash([5,5]);
+    for(var mi=0;mi<this.masts.length;mi++){for(var wi=0;wi<this.wtgs.length;wi++){
+      if(!this.wtgs[wi].isTarget)continue;
+      ctx.beginPath();ctx.moveTo(toX(this.masts[mi].location.longitude),toY(this.masts[mi].location.latitude));
+      ctx.lineTo(toX(this.wtgs[wi].location.longitude),toY(this.wtgs[wi].location.latitude));ctx.stroke();
+    }}
+    ctx.setLineDash([]);
+    // External WTGs (diamonds)
+    for(var i=0;i<this.extWtgs.length;i++){var w=this.extWtgs[i];
+      var x=toX(w.location.longitude),y=toY(w.location.latitude),s=8;
+      ctx.fillStyle='rgba(240,165,0,0.6)';ctx.beginPath();ctx.moveTo(x,y-s);ctx.lineTo(x+s,y);ctx.lineTo(x,y+s);ctx.lineTo(x-s,y);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='#f0a500';ctx.lineWidth=1;ctx.stroke();
+    }
+    // Non-target WTGs
+    for(var i=0;i<this.wtgs.length;i++){if(this.wtgs[i].isTarget)continue;var w=this.wtgs[i];
+      var x=toX(w.location.longitude),y=toY(w.location.latitude);
+      ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.12)';ctx.fill();ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=1;ctx.stroke();
+    }
+    // Target WTGs
+    for(var i=0;i<this.wtgs.length;i++){if(!this.wtgs[i].isTarget)continue;var w=this.wtgs[i];
+      var x=toX(w.location.longitude),y=toY(w.location.latitude);
+      ctx.beginPath();ctx.arc(x,y,12,0,Math.PI*2);ctx.fillStyle='rgba(45,156,206,0.25)';ctx.fill();ctx.strokeStyle='#2d9cce';ctx.lineWidth=1.5;ctx.stroke();
+    }
+    // Masts (triangles)
+    for(var i=0;i<this.masts.length;i++){var m=this.masts[i];
+      var x=toX(m.location.longitude),y=toY(m.location.latitude);
+      ctx.beginPath();ctx.moveTo(x,y-12);ctx.lineTo(x-9,y+8);ctx.lineTo(x+9,y+8);ctx.closePath();
+      ctx.fillStyle='rgba(231,76,60,0.3)';ctx.fill();ctx.strokeStyle='#e74c3c';ctx.lineWidth=1.5;ctx.stroke();
+    }
+    // Labels
+    ctx.font='9px "Open Sans",sans-serif';ctx.textAlign='left';ctx.fillStyle='rgba(255,255,255,0.6)';
+    for(var i=0;i<this.masts.length;i++){var m=this.masts[i];ctx.fillText(m.name,toX(m.location.longitude)+14,toY(m.location.latitude)+4)}
+    for(var i=0;i<this.wtgs.length;i++){if(!this.wtgs[i].isTarget)continue;var w=this.wtgs[i];ctx.fillText(w.name,toX(w.location.longitude)+16,toY(w.location.latitude)+4)}
+    // Compass
+    ctx.fillStyle='rgba(255,255,255,0.3)';ctx.font='bold 10px "Open Sans",sans-serif';ctx.textAlign='center';
+    ctx.fillText('N',w-30,pad-10);ctx.fillText('S',w-30,h-pad+15);ctx.fillText('E',w-pad+15,h-30);ctx.fillText('W',pad-15,h-30);
+    // Scale
+    var distKm=WGeo.haversine({latitude:minLat,longitude:minLon},{latitude:minLat,longitude:maxLon})/1000;
+    ctx.fillStyle='rgba(255,255,255,0.3)';ctx.font='9px "Open Sans",sans-serif';ctx.textAlign='center';
+    ctx.fillText('~'+distKm.toFixed(1)+' km',w/2,h-pad+30);
+    // Info
+    document.getElementById('mapInfo').textContent='Showing '+this.masts.length+' masts, '+this.wtgs.length+' WTGs ('+this.wtgs.filter(function(w){return w.isTarget}).length+' target), '+this.extWtgs.length+' external WTGs';
+  },
+
+  /* ── REPORT ───────────────────────────────────────── */
+  genReport:function(){
+    if(!this.results){this.showAlert('error','Run analysis first.');return}
+    var r=this.results,t=r.terrain[0],p=r.pcv,f=r.freestream[0];
+    var h='<div class="tool-report">';
+    h+='<h3 style="margin-top:0">PCV Terrain Assessment Report</h3>';
+    h+='<p style="color:rgba(255,255,255,.4);font-size:.72rem">IEC 61400-12-1:2017 | Generated: '+new Date().toISOString().split('T')[0]+'</p>';
+    h+='<h3>Executive Summary</h3>';
+    h+='<p>This assessment evaluates the terrain suitability for Power Curve Verification (PCV) at the subject site per IEC 61400-12-1. The analysis covers '+this.masts.length+' meteorological mast(s) and '+this.wtgs.length+' wind turbine(s) across '+t.metadata.numSectors+' directional sectors.</p>';
+    h+='<p><strong>Key Findings:</strong></p><ul style="padding-left:1.5rem;margin:.5rem 0 1rem">';
+    h+='<li>Terrain Classification: <strong>'+t.summary.terrainClass+'</strong> ('+t.summary.terrainClassification+' terrain per IEC 61400-12-1)</li>';
+    h+='<li>Valid Measurement Sectors: <strong>'+t.summary.validSectorsCount+'/'+t.summary.totalSectors+'</strong> ('+t.summary.validSectorPercentage.toFixed(1)+'% coverage)</li>';
+    h+='<li>Freestream Sectors: <strong>'+t.summary.freestreamSectorsCount+'</strong></li>';
+    h+='<li>Best PCV Pairing: <strong>'+p.bestPairings[0].mastName+' -> '+p.bestPairings[0].wtgName+'</strong> ('+p.bestPairings[0].score+'/100)</li>';
+    h+='<li>IEC Compliance: <strong>'+(t.summary.isIECCompliant?'Yes':'Requires Further Review')+'</strong></li>';
+    h+='</ul>';
+    for(var i=0;i<t.summary.complianceNotes.length;i++)h+='<p style="color:var(--gold);font-size:.82rem">Note: '+t.summary.complianceNotes[i]+'</p>';
+    h+='<h3>Mast Details</h3><table><thead><tr><th>Name</th><th>Latitude</th><th>Longitude</th><th>Height (m)</th><th>Type</th></tr></thead><tbody>';
+    for(var i=0;i<this.masts.length;i++){var m=this.masts[i];h+='<tr><td>'+m.name+'</td><td>'+m.location.latitude.toFixed(5)+'</td><td>'+m.location.longitude.toFixed(5)+'</td><td>'+m.mastHeight+'</td><td>'+(m.type||'-')+'</td></tr>'}
+    h+='</tbody></table>';
+    h+='<h3>WTG Details</h3><table><thead><tr><th>Name</th><th>Latitude</th><th>Longitude</th><th>Rotor D (m)</th><th>Hub H (m)</th><th>Target</th></tr></thead><tbody>';
+    for(var i=0;i<this.wtgs.length;i++){var w=this.wtgs[i];h+='<tr><td>'+w.name+'</td><td>'+w.location.latitude.toFixed(5)+'</td><td>'+w.location.longitude.toFixed(5)+'</td><td>'+w.rotorDiameter+'</td><td>'+w.hubHeight+'</td><td>'+(w.isTarget?'Yes':'No')+'</td></tr>'}
+    h+='</tbody></table>';
+    h+='<h3>Terrain Assessment Results</h3>';
+    for(var pi=0;pi<r.terrain.length;pi++){var ta=r.terrain[pi];
+      h+='<p style="margin-top:1rem"><strong>'+ta.metadata.mastName+' -> '+ta.metadata.targetWtgName+'</strong> | Distance: '+ta.distance.rotorDiameters.toFixed(1)+'D ('+ta.distance.meters.toFixed(0)+'m) | Bearing: '+ta.distance.bearing.toFixed(1)+' deg</p>';
+      h+='<table><thead><tr><th>Dir</th><th>Max Slope (%)</th><th>Max Slope (deg)</th><th>Class</th><th>Valid</th><th>Free</th></tr></thead><tbody>';
+      for(var i=0;i<ta.sectors.length;i++){var s=ta.sectors[i];
+        h+='<tr><td>'+s.direction+'</td><td>'+s.maxSlope.toFixed(1)+'</td><td>'+s.maxSlopeDeg.toFixed(1)+'</td><td>'+s.terrainClass+'</td><td>'+(s.isValid?'Yes':'No')+'</td><td>'+(s.isFreestream?'Yes':'No')+'</td></tr>'}
+      h+='</tbody></table>';
+    }
+    h+='<h3>PCV Selection Ranking</h3><table><thead><tr><th>Rank</th><th>Mast</th><th>WTG</th><th>Distance (D)</th><th>Score</th><th>Valid Sectors</th></tr></thead><tbody>';
+    for(var i=0;i<p.bestPairings.length;i++){var pr=p.bestPairings[i];
+      h+='<tr><td>'+(i+1)+'</td><td>'+pr.mastName+'</td><td>'+pr.wtgName+'</td><td>'+pr.distanceInD.toFixed(1)+'</td><td>'+pr.score+'</td><td>'+pr.validSectors+'/'+pr.totalSectors+'</td></tr>'}
+    h+='</tbody></table>';
+    h+='<h3>Recommendations</h3><ul style="padding-left:1.5rem">';
+    for(var i=0;i<p.recommendations.length;i++)h+='<li>'+p.recommendations[i]+'</li>';
+    h+='</ul>';
+    h+='<p style="margin-top:2rem;color:rgba(255,255,255,.3);font-size:.7rem">Report generated by VK Wind Assessment Tool | IEC 61400-12-1 Compliant Analysis</p>';
+    h+='</div>';
+    document.getElementById('reportContent').innerHTML=h;
+  },
+  exportCSV:function(){
+    if(!this.results){this.showAlert('error','Run analysis first.');return}
+    var t=this.results.terrain[this.selectedPair||0];
+    var csv='Direction,Max Slope (%),Max Slope (deg),Avg Slope (%),Elevation Change (m),Terrain Class,Valid,Freestream,Wake Sources,Failure Reasons\n';
+    for(var i=0;i<t.sectors.length;i++){var s=t.sectors[i];
+      csv+=s.direction+','+s.maxSlope.toFixed(2)+','+s.maxSlopeDeg.toFixed(2)+','+s.avgSlope.toFixed(2)+','+s.maxElevationChange.toFixed(1)+','+s.terrainClass+','+(s.isValid?'Yes':'No')+','+(s.isFreestream?'Yes':'No')+','+s.wakeAffectedTurbines.join(';')+','+s.failureReasons.join(';')+'\n';
+    }
+    var blob=new Blob([csv],{type:'text/csv'});var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='sector_data_'+t.metadata.mastName.replace(/\s+/g,'_')+'.csv';a.click();URL.revokeObjectURL(url);
+    this.showAlert('success','CSV exported successfully.');
+  }
+};
+
+APP.init();
+})();
+</script>
+</body>
+</html>
