@@ -1,0 +1,9 @@
+1:"$Sreact.fragment"
+2:I[47257,["/wind-energy-tools/_next/static/chunks/4392189f08a7af14.js"],"ClientPageRoot"]
+3:I[14787,["/wind-energy-tools/_next/static/chunks/602505b1bd9a9f08.js","/wind-energy-tools/_next/static/chunks/9fd2d4aaea8bfb70.js","/wind-energy-tools/_next/static/chunks/fdd9b3f98f2ce479.js","/wind-energy-tools/_next/static/chunks/00bfaa57db089373.js"],"default"]
+6:I[97367,["/wind-energy-tools/_next/static/chunks/4392189f08a7af14.js"],"OutletBoundary"]
+7:"$Sreact.suspense"
+0:{"buildId":"-Sk5mOqft-j2VHEJR_nA8","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/wind-energy-tools/_next/static/chunks/fdd9b3f98f2ce479.js","async":true}],["$","script","script-1",{"src":"/wind-energy-tools/_next/static/chunks/00bfaa57db089373.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
+4:{}
+5:"$0:rsc:props:children:0:props:serverProvidedParams:params"
+8:null
