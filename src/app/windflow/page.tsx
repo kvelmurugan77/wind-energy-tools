@@ -46,6 +46,7 @@ import {
   stabilityCorrectedProfile,
   jacksonHuntSpeedup,
   turbulenceIntensity,
+  flowDeflectionAngle,
   LAND_COVER_ROUGHNESS,
   type StabilityParams,
 } from '@/lib/windflow/engine';
