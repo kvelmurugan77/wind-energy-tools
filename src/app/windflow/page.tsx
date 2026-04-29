@@ -2,25 +2,11 @@
 
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import {
-  Wind,
-  Layers,
-  Eye,
-  EyeOff,
-  Plus,
-  RotateCcw,
-  RotateCw,
-  MapPin,
-  Activity,
-  Zap,
-  ChevronDown,
-  ChevronRight,
-  Settings,
-  FileText,
-  HelpCircle,
-  Menu,
-  X,
+  Wind, Layers, Eye, EyeOff, Plus, MapPin, Activity, Zap,
+  ChevronDown, ChevronRight, Upload, Trash2, Download,
+  RotateCcw, RotateCw, Settings, FileText,
+  Thermometer, Compass, BarChart3, AlertTriangle,
 } from 'lucide-react';
-
 import dynamic from 'next/dynamic';
 
 const MapView = dynamic(() => import('@/components/windflow/MapView'), {
@@ -35,1185 +21,605 @@ const MapView = dynamic(() => import('@/components/windflow/MapView'), {
   ),
 });
 import type { Turbine as MapTurbine } from '@/components/windflow/MapView';
-import WindRose from '@/components/windflow/WindRose';
-import Toolbar from '@/components/windflow/Toolbar';
-import type { ToolType, MapStyle } from '@/components/windflow/Toolbar';
-import PropertiesPanel from '@/components/windflow/PropertiesPanel';
-import type { ProjectSettings } from '@/components/windflow/PropertiesPanel';
 
 import {
-  frictionVelocity,
-  stabilityCorrectedProfile,
-  jacksonHuntSpeedup,
-  turbulenceIntensity,
-  flowDeflectionAngle,
-  LAND_COVER_ROUGHNESS,
-  type StabilityParams,
-} from '@/lib/windflow/engine';
+  runPipeline,
+  type PipelineConfig,
+  type PipelineResult,
+  type TurbineInput,
+} from '@/lib/windflow/pipeline';
 import {
-  weibullMean,
-  weibullPDF,
-  fitWeibull,
-  reverseWindAtlas,
-  forwardWindAtlas,
-  calculateWindRoseFrequencies,
-  energyPatternFactor,
-  type SiteClimate,
-  type WindAtlas,
-} from '@/lib/windflow/wind-atlas';
+  parseMastCSV,
+  createManualMastData,
+  generateSampleMastData,
+  type MastData,
+} from '@/lib/windflow/mast-parser';
 import {
-  calculateWindFarmWakes,
-  directionalWakeAnalysis,
-  getDefaultPowerCurve,
-  estimateCt,
-  interpolatePower,
-  type Turbine,
-  type SuperpositionMethod,
-} from '@/lib/windflow/wake';
+  getTurbineList,
+  getTurbineSpec,
+  getTurbinesByManufacturer,
+  type TurbineSpec,
+} from '@/lib/windflow/turbine-database';
 import {
-  calculateAEP,
-  calculateUncertainty,
-  monthlyEnergyDistribution,
-  aepWaterfall,
-} from '@/lib/windflow/aep';
+  uniformRoughnessRose,
+  getRoughnessPreset,
+  roughnessClass,
+} from '@/lib/windflow/wasp-atlas';
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Types
-// ═══════════════════════════════════════════════════════════════════════════════
-
-interface WindRoseDataPoint {
-  direction: number;
-  frequency: number;
-  meanSpeed: number;
-  weibullA?: number;
-  weibullK?: number;
-}
-
-interface AnalysisResults {
-  type: 'terrain' | 'wake' | 'aep' | null;
-  data: any;
-}
-
-interface LayerVisibility {
-  turbines: boolean;
-  wakes: boolean;
-  resource: boolean;
-  boundary: boolean;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
 // Constants
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
 
 const M_PER_DEG_LAT = 111320;
-const DEFAULT_CENTER: [number, number] = [51.0, -0.85];
-const DEFAULT_ZOOM = 12;
+const DEFAULT_CENTER: [number, number] = [45.0, 10.0];
+const DEFAULT_ZOOM = 11;
+const NUM_SECTORS = 12;
+const SECTOR_NAMES = ['N', 'NNE', 'ENE', 'E', 'ESE', 'SSE', 'S', 'SSW', 'WSW', 'W', 'WNW', 'NNW'];
 
-const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
-  name: 'Untitled Wind Farm',
-  hubHeight: 100,
-  weibullA: 9.5,
-  weibullK: 2.2,
-  roughness: 0.03,
-  terrainType: 'flat',
-  numSectors: 12,
-};
+// ═══════════════════════════════════════════════════════════════════════════
+// Collapsible Section Component
+// ═══════════════════════════════════════════════════════════════════════════
 
-const DEFAULT_WIND_ROSE: WindRoseDataPoint[] = [
-  { direction: 0, frequency: 0.09, meanSpeed: 9.2, weibullA: 9.0, weibullK: 2.1 },
-  { direction: 30, frequency: 0.07, meanSpeed: 8.8, weibullA: 8.6, weibullK: 2.0 },
-  { direction: 60, frequency: 0.06, meanSpeed: 8.4, weibullA: 8.2, weibullK: 2.0 },
-  { direction: 90, frequency: 0.05, meanSpeed: 7.8, weibullA: 7.6, weibullK: 1.9 },
-  { direction: 120, frequency: 0.04, meanSpeed: 7.2, weibullA: 7.0, weibullK: 1.9 },
-  { direction: 150, frequency: 0.04, meanSpeed: 7.0, weibullA: 6.8, weibullK: 1.8 },
-  { direction: 180, frequency: 0.04, meanSpeed: 7.1, weibullA: 6.9, weibullK: 1.9 },
-  { direction: 210, frequency: 0.04, meanSpeed: 7.6, weibullA: 7.4, weibullK: 1.9 },
-  { direction: 240, frequency: 0.05, meanSpeed: 8.2, weibullA: 8.0, weibullK: 2.0 },
-  { direction: 270, frequency: 0.10, meanSpeed: 9.8, weibullA: 9.6, weibullK: 2.2 },
-  { direction: 300, frequency: 0.08, meanSpeed: 9.5, weibullA: 9.3, weibullK: 2.1 },
-  { direction: 330, frequency: 0.10, meanSpeed: 9.6, weibullA: 9.4, weibullK: 2.2 },
-];
-
-const DEFAULT_LOSSES = {
-  wake: 0,
-  electrical: 0.02,
-  availability: 0.03,
-  environmental: 0.01,
-};
-
-const UNCERTAINTY_SOURCES = [
-  { name: 'Wind measurement', value: 0.05 },
-  { name: 'Wind variability', value: 0.055 },
-  { name: 'Wake modelling', value: 0.02 },
-  { name: 'Power curve', value: 0.015 },
-  { name: 'Electrical losses', value: 0.005 },
-];
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Utility Functions
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/** Meters per degree of longitude at a given latitude */
-function mPerDegLng(lat: number): number {
-  return M_PER_DEG_LAT * Math.cos((lat * Math.PI) / 180);
-}
-
-/** Convert lat/lng to local x/y meters (relative to origin) */
-function latLngToMeters(
-  lat: number,
-  lng: number,
-  originLat: number,
-  originLng: number,
-): { x: number; y: number } {
-  return {
-    x: (lng - originLng) * mPerDegLng(originLat),
-    y: (lat - originLat) * M_PER_DEG_LAT,
-  };
-}
-
-/** Convert local x/y meters back to lat/lng */
-function metersToLatLng(
-  x: number,
-  y: number,
-  originLat: number,
-  originLng: number,
-): { lat: number; lng: number } {
-  return {
-    lat: originLat + y / M_PER_DEG_LAT,
-    lng: originLng + x / mPerDegLng(originLat),
-  };
-}
-
-/** Generate a unique turbine ID */
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-}
-
-/** Compute terrain length scale L based on terrain type */
-function getTerrainLength(terrainType: string): number {
-  switch (terrainType) {
-    case 'flat': return 2000;
-    case 'rolling': return 1000;
-    case 'complex': return 500;
-    case 'mountainous': return 200;
-    default: return 1000;
-  }
-}
-
-/** Compute terrain profile (flat with slight variation) */
-function buildTerrainProfile(
-  x: number,
-  y: number,
-  terrainType: string,
-): { distance: number[]; elevation: number[] } {
-  const L = getTerrainLength(terrainType);
-  const baseElevation = 150;
-  const numPoints = 20;
-  const extent = 2 * L;
-  const step = extent / (numPoints - 1);
-  const distance: number[] = [];
-  const elevation: number[] = [];
-
-  for (let i = 0; i < numPoints; i++) {
-    distance.push(-L + i * step);
-    const distFromCenter = Math.abs(-L + i * step - x);
-    // Small speed-up bump for non-flat terrain
-    const hillHeight =
-      terrainType === 'flat' ? 0 : 20 * Math.exp(-(distFromCenter * distFromCenter) / (L * L));
-    elevation.push(baseElevation + hillHeight);
-  }
-
-  return { distance, elevation };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Collapsible Section Component (Left Panel)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function LeftPanelSection({
-  icon: Icon,
-  title,
-  defaultOpen = true,
-  children,
-}: {
-  icon: React.ElementType;
-  title: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
+function Section({ icon: Icon, title, defaultOpen = true, children, badge }: {
+  icon: React.ElementType; title: string; defaultOpen?: boolean;
+  children: React.ReactNode; badge?: string;
 }) {
-  const [open, setOpen] = React.useState(defaultOpen);
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="border-b border-[#1e293b]">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#162033] transition-colors"
-      >
-        {open ? (
-          <ChevronDown className="w-3 h-3 text-slate-500 shrink-0" />
-        ) : (
-          <ChevronRight className="w-3 h-3 text-slate-500 shrink-0" />
-        )}
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#162033] transition-colors">
+        {open ? <ChevronDown className="w-3 h-3 text-slate-500 shrink-0" /> : <ChevronRight className="w-3 h-3 text-slate-500 shrink-0" />}
         <Icon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300 flex-1">
-          {title}
-        </span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300 flex-1">{title}</span>
+        {badge && <span className="text-[9px] bg-emerald-600/30 text-emerald-400 px-1.5 py-0.5 rounded font-medium">{badge}</span>}
       </button>
       {open && <div className="px-3 pb-3 space-y-2">{children}</div>}
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Main Page Component
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// Mini Wind Rose SVG Component
+// ═══════════════════════════════════════════════════════════════════════════
 
-export default function WindFlowPage() {
-  // ── Core State ──────────────────────────────────────────────────────────────
-  const [turbines, setTurbines] = useState<Turbine[]>([]);
-  const [selectedTurbineId, setSelectedTurbineId] = useState<string | null>(null);
-  const [activeTool, setActiveTool] = useState<ToolType>('pointer');
-  const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
-  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
-  const [mapStyle, setMapStyle] = useState<MapStyle>('dark');
-  const [calculating, setCalculating] = useState(false);
+function MiniWindRose({ data, size = 140 }: { data: { frequency: number; meanSpeed: number }[]; size?: number }) {
+  const cx = size / 2;
+  const cy = size / 2;
+  const maxR = size / 2 - 14;
+  const maxFreq = Math.max(...data.map(d => d.frequency), 0.01);
 
-  // ── Project Settings ────────────────────────────────────────────────────────
-  const [projectSettings, setProjectSettings] =
-    useState<ProjectSettings>(DEFAULT_PROJECT_SETTINGS);
+  // Sort by direction for polygon
+  const sorted = [...data].map((d, i) => ({ ...d, angle: i * 30 })).sort((a, b) => a.angle - b.angle);
 
-  // ── Wind Data ──────────────────────────────────────────────────────────────
-  const [windDirection, setWindDirection] = useState(270); // prevailing westerly
-  const [windSpeed, setWindSpeed] = useState(9.5);
-  const [windRoseData, setWindRoseData] =
-    useState<WindRoseDataPoint[]>(DEFAULT_WIND_ROSE);
-
-  // ── Layers ─────────────────────────────────────────────────────────────────
-  const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({
-    turbines: true,
-    wakes: false,
-    resource: false,
-    boundary: false,
+  const points = sorted.map(d => {
+    const r = (d.frequency / maxFreq) * maxR;
+    const rad = ((d.angle - 90) * Math.PI) / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
   });
 
-  // ── Map Data ───────────────────────────────────────────────────────────────
-  const [resourceGrid, setResourceGrid] = useState<
-    { lat: number; lng: number; speed: number }[] | undefined
-  >(undefined);
-  const [boundaryPoints, setBoundaryPoints] = useState<
-    { lat: number; lng: number }[] | undefined
-  >(undefined);
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' Z');
 
-  // ── Analysis Results ──────────────────────────────────────────────────────
-  const [results, setResults] = useState<AnalysisResults | null>(null);
-  const [losses, setLosses] = useState(DEFAULT_LOSSES);
+  return (
+    <svg width={size} height={size} className="mx-auto">
+      {/* Grid circles */}
+      {[0.25, 0.5, 0.75, 1.0].map(f => (
+        <circle key={f} cx={cx} cy={cy} r={maxR * f} fill="none" stroke="#1e293b" strokeWidth={0.5} />
+      ))}
+      {/* Direction labels */}
+      {['N', 'E', 'S', 'W'].map((label, i) => {
+        const angle = ((i * 90 - 90) * Math.PI) / 180;
+        return (
+          <text key={label} x={cx + (maxR + 10) * Math.cos(angle)} y={cy + (maxR + 10) * Math.sin(angle) + 3}
+            textAnchor="middle" fill="#64748b" fontSize={7} fontFamily="sans-serif">{label}</text>
+        );
+      })}
+      {/* Polygon */}
+      <path d={pathD} fill="rgba(34,197,94,0.25)" stroke="#22c55e" strokeWidth={1.5} />
+      {/* Spokes */}
+      {sorted.map((d, i) => {
+        const rad = ((d.angle - 90) * Math.PI) / 180;
+        return <line key={i} x1={cx} y1={cy} x2={cx + maxR * Math.cos(rad)} y2={cy + maxR * Math.sin(rad)} stroke="#1e293b" strokeWidth={0.5} />;
+      })}
+    </svg>
+  );
+}
 
-  // ── UI State ──────────────────────────────────────────────────────────────
-  const [showMenu, setShowMenu] = useState(false);
-  const [rightPanelVisible, setRightPanelVisible] = useState(true);
+// ═══════════════════════════════════════════════════════════════════════════
+// Main Page Component
+// ═══════════════════════════════════════════════════════════════════════════
+
+export default function WindFlowPage() {
+  // ── Core State ──
+  const [turbines, setTurbines] = useState<{
+    id: string; name: string; lat: number; lng: number; model: string;
+  }[]>([]);
+  const [selectedTurbineId, setSelectedTurbineId] = useState<string | null>(null);
+  const [activeTool, setActiveTool] = useState<'pointer' | 'turbine' | 'boundary' | 'measure'>('pointer');
+  const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
+  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
+  const [mapStyle, setMapStyle] = useState<'dark' | 'satellite'>('dark');
+  const [calculating, setCalculating] = useState(false);
+
+  // ── Mast Data ──
+  const [mastData, setMastData] = useState<MastData | null>(null);
+  const [mastHeight, setMastHeight] = useState(80);
+  const [mastRoughness, setMastRoughness] = useState(0.03);
+  const [mastLatitude, setMastLatitude] = useState(45);
+  const [csvError, setCsvError] = useState<string | null>(null);
+
+  // ── Manual Sector Entry ──
+  const [manualSectors, setManualSectors] = useState(
+    Array.from({ length: 12 }, (_, i) => ({
+      direction: i * 30,
+      meanSpeed: i <= 2 || i >= 10 ? 9.0 : i <= 8 ? 7.5 : 8.0,
+      frequency: [9, 7, 6, 5, 4, 4, 4, 4, 5, 6, 7, 10][i] / 100,
+    }))
+  );
+
+  // ── Turbine Model ──
+  const [selectedModel, setSelectedModel] = useState('Vestas V150-5.6 MW');
+  const turbineList = useMemo(() => getTurbineList(), []);
+  const turbineByMfg = useMemo(() => getTurbinesByManufacturer(), []);
+  const selectedSpec = useMemo(() => getTurbineSpec(selectedModel), [selectedModel]);
+
+  // ── Roughness Rose ──
+  const [roughnessRose, setRoughnessRose] = useState<number[]>(new Array(12).fill(0.03));
+  const [roughnessPreset, setRoughnessPreset] = useState('farmland');
+
+  // ── Losses ──
+  const [losses, setLosses] = useState({ wake: 0, electrical: 0.02, availability: 0.03, environmental: 0.01 });
+  const [wakeDecay, setWakeDecay] = useState(0.075);
+
+  // ── Layer Visibility ──
+  const [layerVisibility, setLayerVisibility] = useState({ turbines: true, wakes: false, resource: false, boundary: false });
+
+  // ── Analysis Results ──
+  const [results, setResults] = useState<PipelineResult | null>(null);
+  const [resultTab, setResultTab] = useState<'summary' | 'turbines' | 'windrose' | 'losses'>('summary');
+
+  // ── Map Data ──
+  const [resourceGrid, setResourceGrid] = useState<{ lat: number; lng: number; speed: number }[] | undefined>();
+
+  // ── Refs ──
   const turbineCounterRef = useRef(0);
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Derived Values ────────────────────────────────────────────────────────
+  // ── Derived ──
+  const selectedTurbine = useMemo(() => turbines.find(t => t.id === selectedTurbineId), [turbines, selectedTurbineId]);
+  const totalCapacity = useMemo(() => turbines.reduce((sum) => {
+    const spec = selectedSpec;
+    return sum + (spec?.ratedPower ?? 3000) / 1000;
+  }, 0), [turbines, selectedSpec]);
 
-  const selectedTurbine = useMemo(
-    () => turbines.find((t) => t.id === selectedTurbineId) ?? null,
-    [turbines, selectedTurbineId],
-  );
+  // ═══════════════════════════════════════════════════════════════════════
+  // Handlers
+  // ═══════════════════════════════════════════════════════════════════════
 
-  const totalCapacity = useMemo(
-    () => turbines.reduce((sum, t) => sum + t.ratedPower, 0),
-    [turbines],
-  );
-
-  const farmArea = useMemo(() => {
-    if (turbines.length < 3) return 0;
-    const lats = turbines.map((t) => t.lat ?? 0);
-    const lngs = turbines.map((t) => t.lng ?? 0);
-    const latRange = (Math.max(...lats) - Math.min(...lats)) * M_PER_DEG_LAT;
-    const lngRange =
-      (Math.max(...lngs) - Math.min(...lngs)) * mPerDegLng(mapCenter[0]);
-    return (latRange * lngRange) / 1e6; // km²
-  }, [turbines, mapCenter]);
-
-  const meanWS = useMemo(
-    () => weibullMean(projectSettings.weibullA, projectSettings.weibullK),
-    [projectSettings.weibullA, projectSettings.weibullK],
-  );
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Turbine CRUD Handlers
-  // ══════════════════════════════════════════════════════════════════════════
-
-  const handleTurbineAdd = useCallback(
-    (lat: number, lng: number) => {
-      turbineCounterRef.current += 1;
-      const name = `WTG-${String(turbineCounterRef.current).padStart(2, '0')}`;
-      const { x, y } = latLngToMeters(lat, lng, mapCenter[0], mapCenter[1]);
-      const newTurbine: Turbine = {
-        id: generateId(),
-        name,
-        x,
-        y,
-        lat,
-        lng,
-        hubHeight: projectSettings.hubHeight,
-        rotorDiameter: 100,
-        ratedPower: 3000,
-        ratedSpeed: 12,
-        cutInSpeed: 3,
-        cutOutSpeed: 25,
-      };
-      setTurbines((prev) => [...prev, newTurbine]);
-      setSelectedTurbineId(newTurbine.id);
-    },
-    [mapCenter, projectSettings.hubHeight],
-  );
-
-  const handleTurbineMove = useCallback(
-    (id: string, lat: number, lng: number) => {
-      const { x, y } = latLngToMeters(lat, lng, mapCenter[0], mapCenter[1]);
-      setTurbines((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, lat, lng, x, y } : t)),
-      );
-    },
-    [mapCenter],
-  );
-
-  const handleTurbineSelect = useCallback((id: string | null) => {
-    setSelectedTurbineId(id);
-  }, []);
-
-  const handleTurbineDelete = useCallback((id: string) => {
-    setTurbines((prev) => prev.filter((t) => t.id !== id));
+  const handleTurbineAdd = useCallback((lat: number, lng: number) => {
+    turbineCounterRef.current += 1;
+    const name = `WTG-${String(turbineCounterRef.current).padStart(2, '0')}`;
+    setTurbines(prev => [...prev, { id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5), name, lat, lng, model: selectedModel }]);
     setSelectedTurbineId(null);
+  }, [selectedModel]);
+
+  const handleTurbineSelect = useCallback((id: string | null) => setSelectedTurbineId(id), []);
+  const handleTurbineDelete = useCallback((id: string) => { setTurbines(prev => prev.filter(t => t.id !== id)); setSelectedTurbineId(null); }, []);
+
+  const handleCSVUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCsvError(null);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const parsed = parseMastCSV(text, mastHeight, mastLatitude, 0, mastRoughness);
+      if (parsed) {
+        setMastData(parsed);
+      } else {
+        setCsvError('Failed to parse CSV. Check format (needs: Timestamp, Speed, Direction or Sector, Direction, MeanSpeed, WeibullA, WeibullK, Frequency)');
+      }
+    };
+    reader.readAsText(file);
+  }, [mastHeight, mastLatitude, mastRoughness]);
+
+  const handleLoadSampleData = useCallback(() => {
+    const sample = generateSampleMastData();
+    setMastData(sample);
+    setMastLatitude(sample.latitude);
+    setMastHeight(sample.measurementHeight);
+    setMastRoughness(sample.roughnessLength);
+    setMapCenter([sample.latitude, sample.longitude]);
   }, []);
 
-  const handleTurbineUpdate = useCallback(
-    (id: string, updates: Partial<Turbine>) => {
-      setTurbines((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-      );
-    },
-    [],
-  );
+  const handleApplyManualData = useCallback(() => {
+    const data = createManualMastData(manualSectors, mastHeight, mastLatitude, 0, mastRoughness);
+    setMastData(data);
+  }, [manualSectors, mastHeight, mastLatitude, mastRoughness]);
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // Settings Update
-  // ══════════════════════════════════════════════════════════════════════════
-
-  const handleSettingsUpdate = useCallback(
-    (updates: Partial<ProjectSettings>) => {
-      setProjectSettings((prev) => ({ ...prev, ...updates }));
-    },
-    [],
-  );
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Map Controls
-  // ══════════════════════════════════════════════════════════════════════════
-
-  const handleZoomIn = useCallback(() => {
-    setMapZoom((z) => Math.min(z + 1, 18));
+  const handleRoughnessPreset = useCallback((preset: string) => {
+    setRoughnessPreset(preset);
+    setRoughnessRose(getRoughnessPreset(preset));
   }, []);
 
-  const handleZoomOut = useCallback(() => {
-    setMapZoom((z) => Math.max(z - 1, 3));
-  }, []);
-
-  const handleFitAll = useCallback(() => {
-    if (turbines.length === 0) {
-      setMapCenter(DEFAULT_CENTER);
-      setMapZoom(DEFAULT_ZOOM);
-      return;
-    }
-    const lats = turbines.filter((t) => t.lat != null).map((t) => t.lat!);
-    const lngs = turbines.filter((t) => t.lng != null).map((t) => t.lng!);
-    if (lats.length === 0) return;
-    const avgLat = lats.reduce((a, b) => a + b, 0) / lats.length;
-    const avgLng = lngs.reduce((a, b) => a + b, 0) / lngs.length;
-    setMapCenter([avgLat, avgLng]);
-    setMapZoom(13);
-  }, [turbines]);
-
-  const handleUndo = useCallback(() => {
-    // Simple undo: remove last turbine
-    setTurbines((prev) => {
-      if (prev.length === 0) return prev;
-      const removed = prev[prev.length - 1];
-      if (removed.id === selectedTurbineId) setSelectedTurbineId(null);
-      return prev.slice(0, -1);
+  const handleRoughnessChange = useCallback((idx: number, value: number) => {
+    setRoughnessRose(prev => {
+      const next = [...prev];
+      next[idx] = value;
+      return next;
     });
-  }, [selectedTurbineId]);
-
-  const handleRedo = useCallback(() => {
-    // Placeholder — would need history stack for full implementation
+    setRoughnessPreset('custom');
   }, []);
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Layer Toggle
-  // ══════════════════════════════════════════════════════════════════════════
-
-  const toggleLayer = useCallback((key: keyof LayerVisibility) => {
-    setLayerVisibility((prev) => ({ ...prev, [key]: !prev[key] }));
-  }, []);
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Add Sample Layout
-  // ══════════════════════════════════════════════════════════════════════════
 
   const addSampleLayout = useCallback(() => {
-    const centerLat = mapCenter[0];
-    const centerLng = mapCenter[1];
-    const spacingLat = 800 / M_PER_DEG_LAT; // degrees for 800m at this latitude
-    const spacingLng = 800 / mPerDegLng(centerLat);
-    const newTurbines: Turbine[] = [];
+    const spacingLat = 800 / M_PER_DEG_LAT;
+    const spacingLng = 800 / (M_PER_DEG_LAT * Math.cos((mapCenter[0] * Math.PI) / 180));
+    const newTurbines: typeof turbines = [];
     let counter = turbineCounterRef.current;
-
     for (let row = -1; row <= 1; row++) {
       for (let col = -1; col <= 1; col++) {
         counter += 1;
-        const lat = centerLat + row * spacingLat;
-        const lng = centerLng + col * spacingLng;
-        const { x, y } = latLngToMeters(lat, lng, centerLat, centerLng);
         newTurbines.push({
-          id: generateId(),
+          id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
           name: `WTG-${String(counter).padStart(2, '0')}`,
-          x,
-          y,
-          lat,
-          lng,
-          hubHeight: 100,
-          rotorDiameter: 100,
-          ratedPower: 3000,
-          ratedSpeed: 12,
-          cutInSpeed: 3,
-          cutOutSpeed: 25,
+          lat: mapCenter[0] + row * spacingLat,
+          lng: mapCenter[1] + col * spacingLng,
+          model: selectedModel,
         });
       }
     }
-
     turbineCounterRef.current = counter;
     setTurbines(newTurbines);
-    setSelectedTurbineId(null);
     setResults(null);
     setResourceGrid(undefined);
-  }, [mapCenter]);
+  }, [mapCenter, selectedModel]);
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // Wind Rose Sector Click Handler
-  // ══════════════════════════════════════════════════════════════════════════
-
-  const handleSectorClick = useCallback((sectorIndex: number) => {
-    const sector = DEFAULT_WIND_ROSE[sectorIndex];
-    if (sector) {
-      setWindDirection(sector.direction);
-      setWindSpeed(sector.meanSpeed);
-    }
-  }, []);
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Boundary Point Handler
-  // ══════════════════════════════════════════════════════════════════════════
-
-  const handleBoundaryPointAdd = useCallback(
-    (lat: number, lng: number) => {
-      setBoundaryPoints((prev) => [...(prev ?? []), { lat, lng }]);
-    },
-    [],
-  );
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Run Full Analysis
-  // ══════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
+  // RUN ANALYSIS (Full WASP Pipeline)
+  // ═══════════════════════════════════════════════════════════════════════
 
   const runAnalysis = useCallback(async () => {
-    if (turbines.length === 0) return;
-    setCalculating(true);
+    if (!mastData) {
+      alert('Please load mast data first (CSV upload, manual entry, or sample data).');
+      return;
+    }
+    if (turbines.length === 0) {
+      alert('Please place at least one turbine on the map.');
+      return;
+    }
 
-    // Use setTimeout to let the UI update with the spinner
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    setCalculating(true);
+    await new Promise(r => setTimeout(r, 100));
 
     try {
-      const { weibullA, weibullK, roughness, terrainType, numSectors } =
-        projectSettings;
-      const z0 = roughness;
-      const refHeight = 100;
+      const pipelineInput: TurbineInput[] = turbines.map(t => ({
+        id: t.id,
+        name: t.name,
+        lat: t.lat,
+        lng: t.lng,
+        model: t.model,
+      }));
 
-      // ── STEP 1: Flow Model Calculation ───────────────────────────────────
-      const uStar = frictionVelocity(weibullA, refHeight, z0);
-      const stability: StabilityParams = {
-        z0,
-        L: 99999, // neutral
-        type: 'neutral',
+      const config: PipelineConfig = {
+        mastData,
+        turbines: pipelineInput,
+        roughnessRose,
+        terrainModel: 'none',
+        latitude: mastLatitude,
+        stabilityClass: 'neutral',
+        losses: { wake: 0, electrical: losses.electrical, availability: losses.availability, environmental: losses.environmental },
+        wakeDecay,
+        superposition: 'RSS',
       };
 
-      const terrainResults: {
-        turbineId: string;
-        turbineName: string;
-        windSpeed: number;
-        speedUp: number;
-        turbulenceIntensity: number;
-        deflection: number;
-      }[] = [];
-
-      const turbineWindSpeeds: Record<string, number> = {};
-
-      for (const t of turbines) {
-        // Wind speed at hub height using stability-corrected log profile
-        const hubSpeed = stabilityCorrectedProfile(
-          t.hubHeight,
-          z0,
-          uStar,
-          stability,
-        );
-
-        // Terrain speed-up (Jackson-Hunt)
-        const terrainProfile = buildTerrainProfile(t.x, t.y, terrainType);
-        const L = getTerrainLength(terrainType);
-        const speedUp = jacksonHuntSpeedup(terrainProfile, t.x, t.hubHeight, L);
-
-        const effectiveSpeed = hubSpeed * (1 + speedUp);
-        const ti = turbulenceIntensity(
-          uStar,
-          effectiveSpeed,
-          t.hubHeight,
-          z0,
-          'neutral',
-        );
-        const deflection = flowDeflectionAngle(0.5, speedUp);
-
-        turbineWindSpeeds[t.id] = effectiveSpeed;
-
-        terrainResults.push({
-          turbineId: t.id,
-          turbineName: t.name,
-          windSpeed: Math.round(effectiveSpeed * 100) / 100,
-          speedUp: Math.round(speedUp * 1000) / 1000,
-          turbulenceIntensity: Math.round(ti * 10000) / 100,
-          deflection: Math.round(deflection * 100) / 100,
-        });
-      }
-
-      setResults({
-        type: 'terrain',
-        data: { turbines: terrainResults },
-      });
-
-      // ── Generate Resource Grid ────────────────────────────────────────────
-      if (turbines.length > 0) {
-        const gridPoints: { lat: number; lng: number; speed: number }[] = [];
-        const lats = turbines
-          .filter((t) => t.lat != null)
-          .map((t) => t.lat!);
-        const lngs = turbines
-          .filter((t) => t.lng != null)
-          .map((t) => t.lng!);
-
-        if (lats.length > 0) {
-          const minLat = Math.min(...lats) - 0.005;
-          const maxLat = Math.max(...lats) + 0.005;
-          const minLng = Math.min(...lngs) - 0.005;
-          const maxLng = Math.max(...lngs) + 0.005;
-          const gridSpacingLat = 200 / M_PER_DEG_LAT;
-          const gridSpacingLng = 200 / mPerDegLng(mapCenter[0]);
-
-          const numLatSteps = Math.ceil(
-            (maxLat - minLat) / gridSpacingLat,
-          );
-          const numLngSteps = Math.ceil(
-            (maxLng - minLng) / gridSpacingLng,
-          );
-
-          // Limit grid density for performance
-          const maxSteps = 25;
-          const latStep = numLatSteps > maxSteps ? numLatSteps / maxSteps : 1;
-          const lngStep = numLngSteps > maxSteps ? numLngSteps / maxSteps : 1;
-
-          for (let i = 0; i <= numLatSteps; i += latStep) {
-            for (let j = 0; j <= numLngSteps; j += lngStep) {
-              const lat = minLat + i * gridSpacingLat;
-              const lng = minLng + j * gridSpacingLng;
-              // Use base hub speed with slight spatial variation
-              const hubSpeed = stabilityCorrectedProfile(
-                projectSettings.hubHeight,
-                z0,
-                uStar,
-                stability,
-              );
-              // Add small spatial variation for visual interest
-              const noise =
-                0.15 *
-                Math.sin(lat * 1000) *
-                Math.cos(lng * 1000);
-              gridPoints.push({
-                lat,
-                lng,
-                speed: Math.max(
-                  0,
-                  Math.round((hubSpeed + noise) * 10) / 10,
-                ),
-              });
-            }
-          }
-        }
-
-        setResourceGrid(gridPoints);
-        setLayerVisibility((prev) => ({ ...prev, resource: true }));
-      }
-
-      // ── STEP 2: Wake Analysis ─────────────────────────────────────────────
-      const sectorFreq = windRoseData.map((d) => d.frequency);
-      const sectorMeanSpeed = windRoseData.map((d) => d.meanSpeed);
-
-      const wakeAnalysisResult = directionalWakeAnalysis(
-        turbines,
-        { sectorFreq, meanSpeed: sectorMeanSpeed },
-        'RSS',
-      );
-
-      const wakeTurbineData = wakeAnalysisResult.sectorResults.length > 0
-        ? wakeAnalysisResult.sectorResults[wakeAnalysisResult.sectorResults.length - 1].results.map(
-            (wr) => {
-              const t = turbines.find(
-                (tb) => tb.id === wr.turbineId,
-              );
-              return {
-                id: wr.turbineId,
-                name: t?.name ?? 'Unknown',
-                effectiveWindSpeed: Math.round(wr.effectiveSpeed * 100) / 100,
-                wakeDeficit: Math.round(wr.totalDeficit * 10000) / 100,
-                powerOutput: Math.round(wr.powerOutput),
-              };
-            },
-          )
-        : [];
-
-      // Update wake loss
-      const actualWakeLoss =
-        1 - wakeAnalysisResult.overallEfficiency;
-
-      setResults({
-        type: 'wake',
-        data: {
-          farmEfficiency: Math.round(
-            wakeAnalysisResult.overallEfficiency * 10000,
-          ) / 100,
-          overallWakeLoss: Math.round(
-            wakeAnalysisResult.overallWakeLoss * 100,
-          ) / 100,
-          turbines: wakeTurbineData,
-        },
-      });
-
-      setLayerVisibility((prev) => ({ ...prev, wakes: true }));
-
-      // ── STEP 3: AEP Calculation ──────────────────────────────────────────
-      const powerCurve = getDefaultPowerCurve(3000, 3, 12, 25);
-      const totalRatedPower = turbines.reduce(
-        (sum, t) => sum + t.ratedPower,
-        0,
-      );
-
-      const updatedLosses = {
-        wake: actualWakeLoss,
-        electrical: DEFAULT_LOSSES.electrical,
-        availability: DEFAULT_LOSSES.availability,
-        environmental: DEFAULT_LOSSES.environmental,
-      };
-      setLosses(updatedLosses);
-
-      const aepResult = calculateAEP(
-        weibullA,
-        weibullK,
-        powerCurve,
-        totalRatedPower,
-        updatedLosses,
-      );
-
-      // Uncertainty analysis
-      const uncertaintyResult = calculateUncertainty(
-        aepResult.netAEP,
-        UNCERTAINTY_SOURCES,
-      );
-
-      // Monthly distribution
-      const monthlyData = monthlyEnergyDistribution(aepResult.netAEP);
-
-      // Waterfall
-      const waterfallSteps = aepWaterfall(aepResult.grossAEP, updatedLosses);
-
-      // Per-turbine AEP breakdown
-      const perTurbineAEP = turbines.map((t) => {
-        const tPowerCurve = getDefaultPowerCurve(
-          t.ratedPower,
-          t.cutInSpeed,
-          t.ratedSpeed,
-          t.cutOutSpeed,
-        );
-        const tAEP = calculateAEP(
-          weibullA,
-          weibullK,
-          tPowerCurve,
-          t.ratedPower,
-          updatedLosses,
-        );
-        return {
-          id: t.id,
-          name: t.name,
-          grossAEP: tAEP.grossAEP,
-          netAEP: tAEP.netAEP,
-          capacityFactor: tAEP.capacityFactor,
-        };
-      });
-
-      setResults({
-        type: 'aep',
-        data: {
-          summary: {
-            grossAEP: aepResult.grossAEP,
-            netAEP: aepResult.netAEP,
-            capacityFactor: aepResult.capacityFactor,
-            fullLoadHours: aepResult.fullLoadHours,
-            meanPower: aepResult.meanPower,
-            p90AEP: uncertaintyResult.p90AEP,
-            p75AEP: uncertaintyResult.p75AEP,
-            p50AEP: uncertaintyResult.p50AEP,
-            totalUncertainty: uncertaintyResult.totalUncertainty,
-          },
-          turbines: perTurbineAEP,
-          losses: aepResult.losses,
-          uncertainty: uncertaintyResult,
-          monthly: monthlyData,
-          waterfall: waterfallSteps,
-        },
-      });
-    } catch (error) {
-      console.error('Analysis error:', error);
+      const result = runPipeline(config);
+      setResults(result);
+      setResourceGrid(result.resourceGrid);
+      setLayerVisibility(prev => ({ ...prev, resource: true, wakes: true }));
+      setResultTab('summary');
+    } catch (error: any) {
+      console.error('Pipeline error:', error);
+      alert(`Analysis error: ${error.message}`);
     } finally {
       setCalculating(false);
     }
-  }, [turbines, projectSettings, windRoseData, mapCenter]);
+  }, [mastData, turbines, roughnessRose, mastLatitude, losses, wakeDecay]);
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // Convert Turbine[] to MapTurbine[]
-  // ══════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
+  // Map Turbines Conversion
+  // ═══════════════════════════════════════════════════════════════════════
 
-  const mapTurbines: MapTurbine[] = useMemo(
-    () =>
-      turbines.map((t) => ({
-        id: t.id,
-        name: t.name,
-        x: t.x,
-        y: t.y,
-        lat: t.lat,
-        lng: t.lng,
-        hubHeight: t.hubHeight,
-        rotorDiameter: t.rotorDiameter,
-        ratedPower: t.ratedPower,
-        ratedSpeed: t.ratedSpeed,
-        cutInSpeed: t.cutInSpeed,
-        cutOutSpeed: t.cutOutSpeed,
-      })),
-    [turbines],
-  );
+  const mapTurbines: MapTurbine[] = useMemo(() => turbines.map(t => {
+    const spec = getTurbineSpec(t.model);
+    return {
+      id: t.id, name: t.name, x: 0, y: 0, lat: t.lat, lng: t.lng,
+      hubHeight: spec?.hubHeight ?? 100,
+      rotorDiameter: spec?.rotorDiameter ?? 100,
+      ratedPower: spec?.ratedPower ?? 3000,
+      ratedSpeed: spec?.ratedSpeed ?? 12,
+      cutInSpeed: spec?.cutInSpeed ?? 3,
+      cutOutSpeed: spec?.cutOutSpeed ?? 25,
+    };
+  }), [turbines]);
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // Render
-  // ══════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════════════════
 
   return (
     <div className="h-screen flex flex-col bg-[#0a0e1a] overflow-hidden select-none">
-      {/* ── MENU BAR ─────────────────────────────────────────────────────── */}
-      <div className="h-8 bg-[#0c1222] border-b border-[#1e293b] flex items-center px-3 shrink-0 z-50 relative">
-        {/* Logo / App Name */}
+      {/* ── MENU BAR ── */}
+      <div className="h-8 bg-[#0c1222] border-b border-[#1e293b] flex items-center px-3 shrink-0 z-50">
         <div className="flex items-center gap-2 mr-4">
           <div className="w-5 h-5 bg-emerald-600 rounded flex items-center justify-center">
             <Wind className="w-3 h-3 text-white" />
           </div>
-          <span className="text-xs font-bold text-white tracking-wide">
-            WindFlow
-          </span>
-          <span className="text-[10px] text-slate-500 font-medium">
-            v1.0
-          </span>
+          <span className="text-xs font-bold text-white tracking-wide">WindFlow</span>
+          <span className="text-[10px] text-slate-500 font-medium">v2.0</span>
         </div>
-
-        {/* Menu items */}
-        <div className="hidden sm:flex items-center gap-0.5">
-          {['File', 'View', 'Tools', 'Help'].map((item) => (
-            <button
-              key={item}
-              type="button"
-              className="px-2.5 py-1 text-[11px] text-slate-400 hover:text-slate-200 hover:bg-[#162033] rounded transition-colors"
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-
-        {/* Project name */}
         <div className="ml-4 flex items-center gap-1.5">
-          <span className="text-[10px] text-slate-600">PROJECT:</span>
-          <span className="text-[11px] text-slate-300 font-medium">
-            {projectSettings.name}
-          </span>
+          <span className="text-[10px] text-slate-600">WTGs:</span>
+          <span className="text-[11px] text-slate-300 font-medium">{turbines.length}</span>
+          <span className="text-[10px] text-[#1e293b] mx-1">|</span>
+          <span className="text-[10px] text-slate-600">Capacity:</span>
+          <span className="text-[11px] text-slate-300 font-medium">{totalCapacity.toFixed(1)} MW</span>
+          {mastData && (<>
+            <span className="text-[10px] text-[#1e293b] mx-1">|</span>
+            <span className="text-[10px] text-slate-600">Mean WS:</span>
+            <span className="text-[11px] text-emerald-400 font-medium">{mastData.overall.meanSpeed.toFixed(1)} m/s</span>
+          </>)}
         </div>
+        <div className="flex-1" />
+        {calculating && <span className="text-[10px] text-amber-400 animate-pulse">Calculating...</span>}
+      </div>
+
+      {/* ── TOOLBAR ── */}
+      <div className="h-10 bg-[#0c1222] border-b border-[#1e293b] flex items-center px-2 gap-1 shrink-0">
+        {/* Tool buttons */}
+        {[
+          { key: 'pointer' as const, icon: MapPin, label: 'Select' },
+          { key: 'turbine' as const, icon: Plus, label: 'Place WTG' },
+        ].map(tool => (
+          <button key={tool.key} type="button" onClick={() => setActiveTool(tool.key)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] font-medium transition-colors ${
+              activeTool === tool.key ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-600/50' : 'text-slate-400 hover:text-slate-200 hover:bg-[#162033]'
+            }`}>
+            <tool.icon className="w-3.5 h-3.5" /> {tool.label}
+          </button>
+        ))}
+
+        <div className="w-px h-5 bg-[#1e293b] mx-1" />
+
+        {/* Model selector */}
+        <select value={selectedModel} onChange={e => setSelectedModel(e.target.value)}
+          className="h-7 px-2 text-[10px] bg-[#162033] text-slate-300 border border-[#1e293b] rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 max-w-[180px]">
+          {turbineList.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+
+        {selectedSpec && (
+          <span className="text-[9px] text-slate-500">
+            {selectedSpec.ratedPower / 1000}MW | D={selectedSpec.rotorDiameter}m | H={selectedSpec.hubHeight}m
+          </span>
+        )}
 
         <div className="flex-1" />
 
-        {/* Quick stats in menu bar */}
-        <div className="hidden md:flex items-center gap-3 text-[10px] text-slate-500">
-          <span>
-            WTGs:{' '}
-            <span className="text-slate-300 font-medium">
-              {turbines.length}
-            </span>
-          </span>
-          <span className="text-[#1e293b]">|</span>
-          <span>
-            Capacity:{' '}
-            <span className="text-slate-300 font-medium">
-              {totalCapacity >= 1000
-                ? `${(totalCapacity / 1000).toFixed(1)} MW`
-                : `${totalCapacity} kW`}
-            </span>
-          </span>
-          <span className="text-[#1e293b]">|</span>
-          <span>
-            Mean WS:{' '}
-            <span className="text-emerald-400 font-medium">
-              {meanWS.toFixed(1)} m/s
-            </span>
-          </span>
-        </div>
+        {/* Action buttons */}
+        <button type="button" onClick={addSampleLayout}
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded text-[11px] text-slate-400 hover:text-slate-200 hover:bg-[#162033] transition-colors">
+          <Plus className="w-3.5 h-3.5" /> Sample Layout
+        </button>
 
-        {/* Mobile menu toggle */}
-        <button
-          type="button"
-          className="sm:hidden ml-2 text-slate-400 hover:text-white"
-          onClick={() => setShowMenu((v) => !v)}
-        >
-          <Menu className="w-4 h-4" />
+        <button type="button" onClick={runAnalysis} disabled={calculating}
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded text-[11px] font-bold transition-colors ${
+            calculating ? 'bg-slate-700 text-slate-500' : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+          }`}>
+          {calculating ? (
+            <><RotateCw className="w-3.5 h-3.5 animate-spin" /> Calculating...</>
+          ) : (
+            <><Zap className="w-3.5 h-3.5" /> Run Analysis</>
+          )}
         </button>
       </div>
 
-      {/* ── TOOLBAR ──────────────────────────────────────────────────────── */}
-      <Toolbar
-        activeTool={activeTool}
-        onToolChange={setActiveTool}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onFitAll={handleFitAll}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onCalculate={runAnalysis}
-        calculating={calculating}
-        mapStyle={mapStyle}
-        onMapStyleChange={setMapStyle}
-      />
-
-      {/* ── MAIN CONTENT AREA ────────────────────────────────────────────── */}
+      {/* ── MAIN CONTENT ── */}
       <div className="flex-1 flex min-h-0">
-        {/* ── LEFT PANEL (240px) ─────────────────────────────────────────── */}
-        <div className="w-[240px] bg-[#0f172a] border-r border-[#1e293b] flex flex-col shrink-0 overflow-hidden">
-          {/* Panel header */}
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-[#1e293b] shrink-0">
+        {/* ── LEFT PANEL ── */}
+        <div className="w-[256px] bg-[#0f172a] border-r border-[#1e293b] flex flex-col shrink-0 overflow-hidden">
+          <div className="px-3 py-2 border-b border-[#1e293b] flex items-center gap-2 shrink-0">
             <Layers className="w-3.5 h-3.5 text-slate-500" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Explorer
-            </span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Project Explorer</span>
           </div>
-
-          {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {/* ── Section 1: Layers ──────────────────────────────────── */}
-            <LeftPanelSection icon={Layers} title="Layers" defaultOpen>
-              {[
-                {
-                  key: 'turbines' as const,
-                  label: 'Turbines',
-                },
-                {
-                  key: 'wakes' as const,
-                  label: 'Wake Zones',
-                },
-                {
-                  key: 'resource' as const,
-                  label: 'Resource Grid',
-                },
-                {
-                  key: 'boundary' as const,
-                  label: 'Farm Boundary',
-                },
-              ].map((layer) => (
-                <label
-                  key={layer.key}
-                  className="flex items-center gap-2 px-1 py-1 rounded hover:bg-[#162033] cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={layerVisibility[layer.key]}
-                    onChange={() => toggleLayer(layer.key)}
-                    className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 accent-emerald-500"
-                  />
-                  <span className="text-xs text-slate-300">
-                    {layer.label}
-                  </span>
-                  {layerVisibility[layer.key] ? (
-                    <Eye className="w-3 h-3 text-emerald-500 ml-auto" />
-                  ) : (
-                    <EyeOff className="w-3 h-3 text-slate-600 ml-auto" />
-                  )}
-                </label>
-              ))}
 
-              {/* Wind direction indicator */}
-              <div className="mt-2 p-2 bg-[#0c1222] rounded border border-[#1e293b]">
-                <div className="text-[10px] text-slate-500 font-medium mb-1.5">
-                  WIND DIRECTION
+            {/* ── MAST DATA SECTION ── */}
+            <Section icon={Wind} title="Mast Data" badge={mastData ? 'Loaded' : undefined}>
+              <div className="space-y-2">
+                {/* CSV Upload */}
+                <input ref={csvInputRef} type="file" accept=".csv,.txt" onChange={handleCSVUpload} className="hidden" />
+                <button type="button" onClick={() => csvInputRef.current?.click()}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] bg-[#162033] text-slate-300 border border-dashed border-[#334155] rounded hover:border-emerald-500 hover:text-emerald-400 transition-colors">
+                  <Upload className="w-3 h-3" /> Upload CSV (Time Series or Sector Summary)
+                </button>
+                {csvError && <p className="text-[10px] text-red-400">{csvError}</p>}
+
+                <button type="button" onClick={handleLoadSampleData}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 text-[10px] bg-[#162033] text-slate-300 border border-[#334155] rounded hover:bg-[#1e293b] transition-colors">
+                  <FileText className="w-3 h-3" /> Load Sample Data (12-sector)
+                </button>
+
+                {/* Measurement settings */}
+                <div className="grid grid-cols-3 gap-1">
+                  <div>
+                    <label className="text-[9px] text-slate-500 block">Height (m)</label>
+                    <input type="number" value={mastHeight} onChange={e => setMastHeight(+e.target.value)}
+                      className="w-full h-5 px-1 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] text-slate-500 block">z0 (m)</label>
+                    <input type="number" value={mastRoughness} onChange={e => setMastRoughness(+e.target.value)} step="0.001"
+                      className="w-full h-5 px-1 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] text-slate-500 block">Lat</label>
+                    <input type="number" value={mastLatitude} onChange={e => setMastLatitude(+e.target.value)} step="0.1"
+                      className="w-full h-5 px-1 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="range"
-                    min={0}
-                    max={359}
-                    step={1}
-                    value={windDirection}
-                    onChange={(e) =>
-                      setWindDirection(Number(e.target.value))
-                    }
-                    className="flex-1 h-1 accent-emerald-500"
-                  />
-                  <span className="text-xs text-emerald-400 font-mono w-8 text-right">
-                    {windDirection}°
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] text-slate-500">Speed:</span>
-                  <input
-                    type="number"
-                    value={windSpeed}
-                    onChange={(e) =>
-                      setWindSpeed(Number(e.target.value))
-                    }
-                    min={0}
-                    max={40}
-                    step={0.5}
-                    className="w-16 h-5 px-1.5 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                  <span className="text-[10px] text-slate-500">m/s</span>
+
+                {/* Loaded data summary */}
+                {mastData && (
+                  <div className="bg-[#0c1222] rounded border border-[#1e293b] p-2 space-y-1.5">
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-slate-500">Source</span>
+                      <span className="text-emerald-400 font-medium">{mastData.source}</span>
+                    </div>
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-slate-500">Overall Mean Speed</span>
+                      <span className="text-cyan-400 font-bold">{mastData.overall.meanSpeed} m/s</span>
+                    </div>
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-slate-500">Weibull A/k</span>
+                      <span className="text-slate-300">{mastData.overall.weibullA} / {mastData.overall.weibullK}</span>
+                    </div>
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-slate-500">Power Density</span>
+                      <span className="text-amber-400">{mastData.overall.powerDensity} W/m2</span>
+                    </div>
+                    <MiniWindRose data={mastData.sectors.map(s => ({ frequency: s.frequency, meanSpeed: s.meanSpeed }))} size={130} />
+                  </div>
+                )}
+
+                {/* Manual entry toggle */}
+                <button type="button" onClick={() => { /* toggle manual */ }}
+                  className="text-[10px] text-cyan-500 hover:text-cyan-400 flex items-center gap-1">
+                  <ChevronRight className="w-3 h-3" /> Manual 12-Sector Entry
+                </button>
+                <div className="space-y-1 max-h-60 overflow-y-auto">
+                  {manualSectors.map((sec, idx) => (
+                    <div key={idx} className="grid grid-cols-12 gap-0.5 items-center">
+                      <span className="text-[9px] text-slate-500 col-span-2">{SECTOR_NAMES[idx]}</span>
+                      <input type="number" value={sec.meanSpeed} step="0.1"
+                        onChange={e => {
+                          const next = [...manualSectors]; next[idx].meanSpeed = +e.target.value; setManualSectors(next);
+                        }}
+                        className="col-span-4 h-5 px-1 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                      <span className="text-[9px] text-slate-600 col-span-1">f=</span>
+                      <input type="number" value={sec.frequency} step="0.01"
+                        onChange={e => {
+                          const next = [...manualSectors]; next[idx].frequency = +e.target.value; setManualSectors(next);
+                        }}
+                        className="col-span-4 h-5 px-1 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                    </div>
+                  ))}
+                  <button type="button" onClick={handleApplyManualData}
+                    className="w-full py-1 text-[10px] bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 rounded hover:bg-emerald-600/30 transition-colors">
+                    Apply Manual Data
+                  </button>
                 </div>
               </div>
-            </LeftPanelSection>
+            </Section>
 
-            {/* ── Section 2: Turbine List ─────────────────────────────── */}
-            <LeftPanelSection
-              icon={Wind}
-              title="Turbines"
-              defaultOpen
-            >
-              {turbines.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-[11px] text-slate-500 italic">
-                    No turbines placed
-                  </p>
-                  <p className="text-[10px] text-slate-600 mt-1">
-                    Use the turbine tool or click below
-                  </p>
+            {/* ── ROUGHNESS ROSE ── */}
+            <Section icon={Compass} title="Roughness Rose">
+              <div className="space-y-2">
+                {/* Presets */}
+                <div className="flex flex-wrap gap-1">
+                  {['farmland', 'open_sea', 'forest_edge', 'forest', 'suburban', 'complex'].map(preset => (
+                    <button key={preset} type="button" onClick={() => handleRoughnessPreset(preset)}
+                      className={`px-2 py-0.5 text-[9px] rounded border transition-colors ${
+                        roughnessPreset === preset ? 'bg-emerald-600/20 text-emerald-400 border-emerald-600/50' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'
+                      }`}>
+                      {preset}
+                    </button>
+                  ))}
                 </div>
+                {/* Per-sector z0 */}
+                <div className="grid grid-cols-6 gap-0.5">
+                  {roughnessRose.map((z0, idx) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <span className="text-[8px] text-slate-500">{SECTOR_NAMES[idx]}</span>
+                      <input type="number" value={z0} step="0.01" min="0.0001"
+                        onChange={e => handleRoughnessChange(idx, +e.target.value)}
+                        className="w-full h-5 px-0.5 text-[9px] bg-slate-800 border border-slate-700 rounded text-center text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                      <span className="text-[7px] text-slate-600">C{roughnessClass(z0)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Section>
+
+            {/* ── TURBINES LIST ── */}
+            <Section icon={Wind} title={`Turbines (${turbines.length})`}>
+              {turbines.length === 0 ? (
+                <p className="text-[10px] text-slate-500 italic text-center py-2">No turbines placed. Click the map to add.</p>
               ) : (
-                <div className="max-h-48 overflow-y-auto custom-scrollbar">
-                  <table className="w-full text-[10px]">
-                    <thead>
-                      <tr className="text-slate-500">
-                        <th className="text-left pb-1 pr-1 font-medium">
-                          #
-                        </th>
-                        <th className="text-left pb-1 pr-1 font-medium">
-                          Name
-                        </th>
-                        <th className="text-right pb-1 pr-1 font-medium">
-                          Lat
-                        </th>
-                        <th className="text-right pb-1 font-medium">
-                          HH
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {turbines.map((t, idx) => (
-                        <tr
-                          key={t.id}
-                          onClick={() =>
-                            handleTurbineSelect(
-                              selectedTurbineId === t.id
-                                ? null
-                                : t.id,
-                            )
-                          }
-                          className={`cursor-pointer transition-colors ${
-                            selectedTurbineId === t.id
-                              ? 'bg-emerald-600/20 text-emerald-300'
-                              : 'text-slate-400 hover:bg-[#162033]'
-                          }`}
-                        >
-                          <td className="py-0.5 pr-1">{idx + 1}</td>
-                          <td className="py-0.5 pr-1 font-medium truncate max-w-[80px]">
-                            {t.name}
-                          </td>
-                          <td className="py-0.5 pr-1 text-right font-mono">
-                            {t.lat ? t.lat.toFixed(4) : '—'}
-                          </td>
-                          <td className="py-0.5 text-right font-mono">
-                            {t.hubHeight}m
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="space-y-0.5 max-h-40 overflow-y-auto">
+                  {turbines.map(t => {
+                    const spec = getTurbineSpec(t.model);
+                    return (
+                      <div key={t.id} onClick={() => setSelectedTurbineId(t.id)}
+                        className={`flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition-colors ${
+                          selectedTurbineId === t.id ? 'bg-emerald-600/20 border border-emerald-600/30' : 'hover:bg-[#162033]'
+                        }`}>
+                        <span className="text-[10px] text-slate-300 font-medium flex-1">{t.name}</span>
+                        <span className="text-[9px] text-slate-500">{spec?.ratedPower ? `${spec.ratedPower / 1000}MW` : ''}</span>
+                      </div>
+                    );
+                  })}
+                  <button type="button" onClick={() => setTurbines([])}
+                    className="flex items-center gap-1 px-2 py-1 text-[9px] text-red-400 hover:text-red-300">
+                    <Trash2 className="w-3 h-3" /> Clear All
+                  </button>
                 </div>
               )}
+            </Section>
 
-              <button
-                type="button"
-                onClick={addSampleLayout}
-                className="w-full mt-2 h-7 text-[11px] font-medium rounded bg-emerald-600/20 border border-emerald-600/30 text-emerald-400 hover:bg-emerald-600/30 hover:text-emerald-300 transition-colors flex items-center justify-center gap-1.5"
-              >
-                <Plus className="w-3 h-3" />
-                Add Sample Layout (3×3)
-              </button>
-            </LeftPanelSection>
+            {/* ── LAYERS ── */}
+            <Section icon={Layers} title="Layers" defaultOpen={false}>
+              {(['turbines', 'wakes', 'resource', 'boundary'] as const).map(layer => (
+                <label key={layer} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-[#162033] cursor-pointer">
+                  <input type="checkbox" checked={layerVisibility[layer]} onChange={() => setLayerVisibility(prev => ({ ...prev, [layer]: !prev[layer] }))}
+                    className="w-3 h-3 rounded accent-emerald-500" />
+                  <span className="text-[10px] text-slate-300 capitalize">{layer}</span>
+                </label>
+              ))}
+            </Section>
 
-            {/* ── Section 3: Wind Rose ────────────────────────────────── */}
-            <LeftPanelSection
-              icon={Activity}
-              title="Wind Rose"
-              defaultOpen
-            >
-              <div className="flex justify-center">
-                <WindRose
-                  data={windRoseData}
-                  numSectors={projectSettings.numSectors}
-                  size={220}
-                  onSectorClick={handleSectorClick}
-                />
-              </div>
-            </LeftPanelSection>
-
-            {/* ── Section 4: Quick Stats ──────────────────────────────── */}
-            <LeftPanelSection
-              icon={Zap}
-              title="Quick Stats"
-              defaultOpen
-            >
-              <div className="space-y-2">
-                {[
-                  {
-                    label: 'Total Capacity',
-                    value:
-                      totalCapacity >= 1000
-                        ? `${(totalCapacity / 1000).toFixed(1)} MW`
-                        : `${totalCapacity} kW`,
-                    color: 'text-emerald-400',
-                  },
-                  {
-                    label: 'Farm Area',
-                    value:
-                      farmArea > 0
-                        ? `${farmArea.toFixed(2)} km²`
-                        : '—',
-                    color: 'text-cyan-400',
-                  },
-                  {
-                    label: 'Mean Wind Speed',
-                    value: `${meanWS.toFixed(1)} m/s`,
-                    color: 'text-amber-400',
-                  },
-                  {
-                    label: 'Turbine Count',
-                    value: `${turbines.length}`,
-                    color: 'text-slate-200',
-                  },
-                  {
-                    label: 'Roughness z₀',
-                    value: `${projectSettings.roughness} m`,
-                    color: 'text-slate-300',
-                  },
-                  {
-                    label: 'Terrain Type',
-                    value: projectSettings.terrainType,
-                    color: 'text-slate-300',
-                  },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="flex items-center justify-between px-1"
-                  >
-                    <span className="text-[10px] text-slate-500">
-                      {stat.label}
-                    </span>
-                    <span
-                      className={`text-[11px] font-semibold ${stat.color}`}
-                    >
-                      {stat.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Weibull info */}
-              <div className="mt-2 p-2 bg-[#0c1222] rounded border border-[#1e293b]">
-                <div className="text-[10px] text-slate-500 font-medium mb-1">
-                  WEIBULL DISTRIBUTION
+            {/* ── SETTINGS ── */}
+            <Section icon={Settings} title="Settings" defaultOpen={false}>
+              <div className="space-y-1.5">
+                <div>
+                  <label className="text-[9px] text-slate-500 block">Wake Decay Constant</label>
+                  <input type="number" value={wakeDecay} onChange={e => setWakeDecay(+e.target.value)} step="0.005" min="0.02" max="0.15"
+                    className="w-full h-5 px-1.5 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
                 </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <div>
-                    <span className="text-[10px] text-slate-600">
-                      Scale A:
-                    </span>{' '}
-                    <span className="text-[11px] text-emerald-400 font-mono">
-                      {projectSettings.weibullA} m/s
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-600">
-                      Shape k:
-                    </span>{' '}
-                    <span className="text-[11px] text-emerald-400 font-mono">
-                      {projectSettings.weibullK}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-600">
-                      EPF (K):
-                    </span>{' '}
-                    <span className="text-[11px] text-slate-300 font-mono">
-                      {energyPatternFactor(
-                        projectSettings.weibullA,
-                        projectSettings.weibullK,
-                      ).toFixed(3)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-600">
-                      Sectors:
-                    </span>{' '}
-                    <span className="text-[11px] text-slate-300 font-mono">
-                      {projectSettings.numSectors}
-                    </span>
-                  </div>
+                <div>
+                  <label className="text-[9px] text-slate-500 block">Electrical Losses (%)</label>
+                  <input type="number" value={losses.electrical * 100} onChange={e => setLosses(prev => ({ ...prev, electrical: +e.target.value / 100 }))}
+                    className="w-full h-5 px-1.5 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                </div>
+                <div>
+                  <label className="text-[9px] text-slate-500 block">Availability Losses (%)</label>
+                  <input type="number" value={losses.availability * 100} onChange={e => setLosses(prev => ({ ...prev, availability: +e.target.value / 100 }))}
+                    className="w-full h-5 px-1.5 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                </div>
+                <div>
+                  <label className="text-[9px] text-slate-500 block">Environmental Losses (%)</label>
+                  <input type="number" value={losses.environmental * 100} onChange={e => setLosses(prev => ({ ...prev, environmental: +e.target.value / 100 }))}
+                    className="w-full h-5 px-1.5 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
                 </div>
               </div>
-            </LeftPanelSection>
+            </Section>
           </div>
         </div>
 
-        {/* ── MAP VIEW ────────────────────────────────────────────────────── */}
-        <div className="flex-1 relative min-w-0">
+        {/* ── CENTER: MAP ── */}
+        <div className="flex-1 relative">
           <MapView
             turbines={mapTurbines}
             onTurbineAdd={handleTurbineAdd}
-            onTurbineMove={handleTurbineMove}
+            onTurbineMove={(id, lat, lng) => setTurbines(prev => prev.map(t => t.id === id ? { ...t, lat, lng } : t))}
             onTurbineSelect={handleTurbineSelect}
             onTurbineDelete={handleTurbineDelete}
             selectedTurbineId={selectedTurbineId}
@@ -1221,192 +627,227 @@ export default function WindFlowPage() {
             showWakeZones={layerVisibility.wakes}
             showResourceGrid={layerVisibility.resource}
             showBoundary={layerVisibility.boundary}
-            windDirection={windDirection}
-            windSpeed={windSpeed}
+            windDirection={270}
+            windSpeed={mastData?.overall.meanSpeed ?? 8}
             resourceData={resourceGrid}
-            boundaryPoints={boundaryPoints}
-            onBoundaryPointAdd={handleBoundaryPointAdd}
             center={mapCenter}
             zoom={mapZoom}
           />
 
-          {/* Map overlay: right panel toggle */}
-          <button
-            type="button"
-            onClick={() => setRightPanelVisible((v) => !v)}
-            className="absolute top-3 right-3 z-[1000] w-8 h-8 bg-[#1e293b]/90 backdrop-blur-sm border border-[#334155] rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-[#334155] transition-colors"
-            title={rightPanelVisible ? 'Hide Properties' : 'Show Properties'}
-          >
-            {rightPanelVisible ? (
-              <X className="w-4 h-4" />
-            ) : (
-              <Settings className="w-4 h-4" />
-            )}
-          </button>
-        </div>
+          {/* Tool indicator */}
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-[#0f172a]/90 backdrop-blur border border-[#334155] rounded-lg px-3 py-1 flex items-center gap-2 pointer-events-none">
+            <div className={`w-2 h-2 rounded-full ${activeTool === 'turbine' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+            <span className="text-[10px] text-slate-300">
+              {activeTool === 'pointer' ? 'Select Mode' : 'Click map to place turbine'}
+            </span>
+          </div>
 
-        {/* ── RIGHT PANEL (Properties) ───────────────────────────────────── */}
-        <PropertiesPanel
-          selectedTurbine={selectedTurbine}
-          onTurbineUpdate={handleTurbineUpdate}
-          projectSettings={projectSettings}
-          onSettingsUpdate={handleSettingsUpdate}
-          results={results}
-          visible={rightPanelVisible}
-        />
-      </div>
-
-      {/* ── STATUS BAR ────────────────────────────────────────────────────── */}
-      <div className="h-7 bg-[#0c1222] border-t border-[#1e293b] flex items-center px-3 shrink-0 z-50">
-        <div className="flex items-center gap-3 text-[10px] font-mono">
-          <span className="text-slate-600">
-            LAT{' '}
-            <span className="text-slate-400">
-              {mapCenter[0].toFixed(4)}
-            </span>
-          </span>
-          <span className="text-[#1e293b]">│</span>
-          <span className="text-slate-600">
-            LON{' '}
-            <span className="text-slate-400">
-              {mapCenter[1].toFixed(4)}
-            </span>
-          </span>
-          <span className="text-[#1e293b]">│</span>
-          <span className="text-slate-600">
-            ZOOM{' '}
-            <span className="text-slate-400">{mapZoom}</span>
-          </span>
-          <span className="text-[#1e293b]">│</span>
-          <span className="text-slate-600">
-            WTGs{' '}
-            <span className="text-emerald-400">
-              {turbines.length}
-            </span>
-          </span>
-          <span className="text-[#1e293b]">│</span>
-          <span className="text-slate-600">
-            TOOL{' '}
-            <span className="text-cyan-400 uppercase">
-              {activeTool}
-            </span>
-          </span>
-        </div>
-
-        <div className="flex-1" />
-
-        <div className="flex items-center gap-3 text-[10px]">
-          {calculating && (
-            <span className="flex items-center gap-1.5 text-amber-400">
-              <span className="w-3 h-3 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
-              Calculating...
-            </span>
+          {/* Resource legend */}
+          {layerVisibility.resource && resourceGrid && (
+            <div className="absolute bottom-8 left-3 z-[1000] bg-[#0f172a]/90 backdrop-blur border border-[#334155] rounded-lg p-2 pointer-events-none">
+              <div className="text-[9px] text-slate-400 font-semibold uppercase mb-1">Wind Speed (m/s)</div>
+              {[
+                { color: '#3b82f6', label: '< 5' }, { color: '#06b6d4', label: '5-6.5' },
+                { color: '#22c55e', label: '6.5-7.5' }, { color: '#eab308', label: '7.5-8.5' },
+                { color: '#f97316', label: '8.5-9.5' }, { color: '#ef4444', label: '> 9.5' },
+              ].map(item => (
+                <div key={item.label} className="flex items-center gap-1.5">
+                  <div className="w-3 h-2 rounded-sm" style={{ backgroundColor: item.color }} />
+                  <span className="text-[9px] text-slate-300">{item.label}</span>
+                </div>
+              ))}
+            </div>
           )}
-          {results && (
-            <span className="flex items-center gap-1 text-emerald-500">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Analysis complete
-            </span>
-          )}
-          <span className="text-slate-600">WGS 84</span>
         </div>
-      </div>
 
-      {/* ── DARK THEME SCROLLBAR STYLES ───────────────────────────────────── */}
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #1e293b;
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #334155;
-        }
-        /* Leaflet container fix */
-        .leaflet-container {
-          background: #0a0e1a !important;
-          font-family: inherit;
-        }
-        /* Cursor styles */
-        .cursor-crosshair .leaflet-container {
-          cursor: crosshair !important;
-        }
-        .cursor-grab .leaflet-container {
-          cursor: grab !important;
-        }
-        .cursor-grab .leaflet-container:active {
-          cursor: grabbing !important;
-        }
-        /* Range input dark theme */
-        input[type='range'] {
-          -webkit-appearance: none;
-          appearance: none;
-          height: 4px;
-          background: #1e293b;
-          border-radius: 2px;
-          outline: none;
-        }
-        input[type='range']::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: #10b981;
-          cursor: pointer;
-          border: 2px solid #064e3b;
-        }
-        input[type='range']::-moz-range-thumb {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: #10b981;
-          cursor: pointer;
-          border: 2px solid #064e3b;
-        }
-        /* Checkbox dark theme */
-        input[type='checkbox'] {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 14px;
-          height: 14px;
-          border: 1.5px solid #475569;
-          border-radius: 3px;
-          background: #1e293b;
-          cursor: pointer;
-          position: relative;
-          flex-shrink: 0;
-        }
-        input[type='checkbox']:checked {
-          background: #10b981;
-          border-color: #10b981;
-        }
-        input[type='checkbox']:checked::after {
-          content: '';
-          position: absolute;
-          left: 3.5px;
-          top: 0.5px;
-          width: 5px;
-          height: 9px;
-          border: solid white;
-          border-width: 0 1.5px 1.5px 0;
-          transform: rotate(45deg);
-        }
-        input[type='checkbox']:focus-visible {
-          outline: 2px solid #10b981;
-          outline-offset: 1px;
-        }
-        /* Number input spinner dark theme */
-        input[type='number']::-webkit-inner-spin-button,
-        input[type='number']::-webkit-outer-spin-button {
-          opacity: 0.5;
-        }
-      `}</style>
+        {/* ── RIGHT PANEL: RESULTS ── */}
+        {results && (
+          <div className="w-[320px] bg-[#0f172a] border-l border-[#1e293b] flex flex-col shrink-0 overflow-hidden">
+            <div className="px-3 py-2 border-b border-[#1e293b] flex items-center gap-2 shrink-0">
+              <BarChart3 className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Analysis Results</span>
+            </div>
+
+            {/* Result tabs */}
+            <div className="flex border-b border-[#1e293b] shrink-0">
+              {(['summary', 'turbines', 'windrose', 'losses'] as const).map(tab => (
+                <button key={tab} type="button" onClick={() => setResultTab(tab)}
+                  className={`flex-1 py-1.5 text-[10px] font-medium capitalize transition-colors ${
+                    resultTab === tab ? 'text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-500 hover:text-slate-300'
+                  }`}>{tab}</button>
+              ))}
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
+              {/* ── SUMMARY TAB ── */}
+              {resultTab === 'summary' && (
+                <div className="space-y-2">
+                  <div className="bg-[#0c1222] rounded border border-[#1e293b] p-3 space-y-2">
+                    <h3 className="text-[11px] font-bold text-white uppercase">Farm Summary</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      <ResultCard label="Gross AEP" value={`${results.farmGrossAEP.toFixed(2)} GWh`} color="text-cyan-400" />
+                      <ResultCard label="Net AEP" value={`${results.farmNetAEP.toFixed(2)} GWh`} color="text-emerald-400" />
+                      <ResultCard label="Wake Loss" value={`${results.farmWakeLoss.toFixed(1)}%`} color="text-red-400" />
+                      <ResultCard label="Capacity" value={`${results.farmCapacity.toFixed(1)} MW`} color="text-blue-400" />
+                      <ResultCard label="Net CF" value={`${results.farmNetCF.toFixed(1)}%`} color="text-amber-400" />
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0c1222] rounded border border-[#1e293b] p-3 space-y-2">
+                    <h3 className="text-[11px] font-bold text-white uppercase">Uncertainty</h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      <ResultCard label="P90" value={`${results.p90AEP.toFixed(1)} GWh`} color="text-red-400" />
+                      <ResultCard label="P75" value={`${results.p75AEP.toFixed(1)} GWh`} color="text-amber-400" />
+                      <ResultCard label="P50" value={`${results.p50AEP.toFixed(1)} GWh`} color="text-emerald-400" />
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0c1222] rounded border border-[#1e293b] p-3 space-y-2">
+                    <h3 className="text-[11px] font-bold text-white uppercase">Monthly Energy</h3>
+                    <div className="grid grid-cols-4 gap-1">
+                      {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                        <div key={m} className="text-center">
+                          <div className="text-[8px] text-slate-500">{m}</div>
+                          <div className="text-[10px] text-slate-300 font-medium">{results.monthlyEnergy[i] ? `${(results.monthlyEnergy[i] / 1000).toFixed(1)}` : '-'}</div>
+                          <div className="h-1 mt-0.5 bg-slate-800 rounded overflow-hidden">
+                            <div className="h-full bg-emerald-500 rounded" style={{ width: `${Math.min(100, (results.monthlyEnergy[i] || 0) / (results.farmNetAEP * 1000 / 12) * 100)}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── TURBINES TAB ── */}
+              {resultTab === 'turbines' && (
+                <div className="space-y-1">
+                  <table className="w-full text-[9px]">
+                    <thead>
+                      <tr className="text-slate-500 border-b border-[#1e293b]">
+                        <th className="text-left py-1">WTG</th>
+                        <th className="text-right py-1">Gross WS</th>
+                        <th className="text-right py-1">Gross AEP</th>
+                        <th className="text-right py-1">Net AEP</th>
+                        <th className="text-right py-1">Wake</th>
+                        <th className="text-right py-1">CF%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.turbines.map(t => (
+                        <tr key={t.id} className="border-b border-[#1e293b]/50 text-slate-300">
+                          <td className="py-1 font-medium">{t.name}</td>
+                          <td className="text-right">{t.grossMeanSpeed.toFixed(1)}</td>
+                          <td className="text-right">{t.grossAEP.toFixed(1)}</td>
+                          <td className="text-right text-emerald-400">{t.netAEP.toFixed(1)}</td>
+                          <td className="text-right text-red-400">{t.wakeLossPercent.toFixed(1)}%</td>
+                          <td className="text-right">{t.capacityFactor.toFixed(1)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="text-white font-bold border-t border-[#334155]">
+                        <td className="py-1">Total</td>
+                        <td />
+                        <td className="text-right">{results.farmGrossAEP.toFixed(2)}</td>
+                        <td className="text-right text-emerald-400">{results.farmNetAEP.toFixed(2)}</td>
+                        <td className="text-right text-red-400">{results.farmWakeLoss.toFixed(1)}%</td>
+                        <td className="text-right">{results.farmNetCF.toFixed(1)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
+
+              {/* ── WIND ROSE TAB ── */}
+              {resultTab === 'windrose' && mastData && (
+                <div className="space-y-2">
+                  <MiniWindRose data={mastData.sectors.map(s => ({ frequency: s.frequency, meanSpeed: s.meanSpeed }))} size={200} />
+                  <table className="w-full text-[9px]">
+                    <thead>
+                      <tr className="text-slate-500 border-b border-[#1e293b]">
+                        <th className="text-left py-1">Dir</th>
+                        <th className="text-right py-1">Freq%</th>
+                        <th className="text-right py-1">Mean WS</th>
+                        <th className="text-right py-1">Weibull A</th>
+                        <th className="text-right py-1">Weibull k</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mastData.sectors.map((s, i) => (
+                        <tr key={i} className="border-b border-[#1e293b]/50 text-slate-300">
+                          <td className="py-0.5 font-medium">{SECTOR_NAMES[i]} ({s.direction})</td>
+                          <td className="text-right">{(s.frequency * 100).toFixed(1)}</td>
+                          <td className="text-right">{s.meanSpeed.toFixed(1)}</td>
+                          <td className="text-right">{s.weibullA.toFixed(2)}</td>
+                          <td className="text-right">{s.weibullK.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* ── LOSSES TAB ── */}
+              {resultTab === 'losses' && (
+                <div className="space-y-2">
+                  <div className="bg-[#0c1222] rounded border border-[#1e293b] p-3">
+                    <h3 className="text-[11px] font-bold text-white uppercase mb-2">Energy Loss Waterfall</h3>
+                    <LossBar label="Gross AEP" value={results.farmGrossAEP} total={results.farmGrossAEP} color="bg-cyan-500" />
+                    <LossBar label="Wake Losses" value={results.farmGrossAEP - results.farmNetAEP - results.farmGrossAEP * (1 - losses.electrical) * (1 - losses.availability) * (1 - losses.environmental)} total={results.farmGrossAEP} color="bg-red-500" />
+                    <LossBar label="Electrical" value={results.farmGrossAEP * (results.farmWakeLoss / 100) * losses.electrical} total={results.farmGrossAEP} color="bg-amber-500" />
+                    <LossBar label="Availability" value={results.farmNetAEP * losses.availability / (1 - losses.availability)} total={results.farmGrossAEP} color="bg-orange-500" />
+                    <LossBar label="Environmental" value={results.farmNetAEP * losses.environmental / (1 - losses.environmental)} total={results.farmGrossAEP} color="bg-yellow-500" />
+                    <div className="mt-2 pt-2 border-t border-[#334155]">
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-white font-bold">Net AEP</span>
+                        <span className="text-emerald-400 font-bold">{results.farmNetAEP.toFixed(2)} GWh</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-[#0c1222] rounded border border-[#1e293b] p-3 space-y-1">
+                    <h3 className="text-[11px] font-bold text-white uppercase">Sector Wake Losses</h3>
+                    <div className="grid grid-cols-6 gap-1">
+                      {results.sectorWakeLoss.map((loss, i) => (
+                        <div key={i} className="text-center">
+                          <div className="text-[8px] text-slate-500">{SECTOR_NAMES[i]}</div>
+                          <div className="text-[10px] text-slate-300">{(loss * 100).toFixed(1)}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Sub-components
+// ═══════════════════════════════════════════════════════════════════════════
+
+function ResultCard({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="bg-[#0f172a] rounded border border-[#1e293b] p-2">
+      <div className="text-[9px] text-slate-500 mb-0.5">{label}</div>
+      <div className={`text-sm font-bold ${color}`}>{value}</div>
+    </div>
+  );
+}
+
+function LossBar({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
+  const pct = total > 0 ? (value / total) * 100 : 0;
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[9px] text-slate-400 w-24 text-right">{label}</span>
+      <div className="flex-1 h-4 bg-slate-800 rounded overflow-hidden">
+        <div className={`h-full ${color} rounded`} style={{ width: `${Math.min(100, pct)}%` }} />
+      </div>
+      <span className="text-[9px] text-slate-300 w-16 text-right">{value.toFixed(2)} GWh</span>
     </div>
   );
 }
