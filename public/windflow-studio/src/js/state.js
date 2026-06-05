@@ -1,0 +1,6 @@
+export const S={project:{name:'New Wind Project',lat:24.3125,lon:44.375,hubHeight:144,rotorD:210,ratedKW:11000,z0:0.03,lossPct:5,wakeK:0.04,wakeModel:'jensen',wakeCombination:'rss',mastHeight:100,z0ref:0.05},turbines:[],terrain:null,contours:[],roughness:[],obstacles:[],windClimate:null,powerCurve:null,gwa:null,era5:null,era5t:null,merra2:null,newa:null,mastTS:null,results:null,ts:null,calibration:null,terrainCache:new Map(),windSources:[],selectedWindSourceId:null,useContour:true,useRoughness:true,resourceGrid:null,waspResults:null,log:[]};
+/** Register a wind data source with its actual grid-snapped coordinates */
+export function registerWindSource(src){const idx=S.windSources.findIndex(s=>s.id===src.id);if(idx>=0)S.windSources[idx]=src;else S.windSources.push(src);log(`Registered wind source: ${src.label} @ ${src.lat.toFixed(4)},${src.lon.toFixed(4)} h=${src.height}m`)}
+/** Snap a lat/lon to the nearest grid point for a given resolution */
+export function snapToGrid(lat,lon,dLat,dLon){return{lat:Math.round(lat/dLat)*dLat,lon:Math.round(lon/dLon)*dLon}}
+export function log(msg,type='i'){const line=`[${new Date().toLocaleTimeString()}] ${type.toUpperCase()} ${msg}`;S.log.push(line);const el=document.getElementById('log');if(el)el.textContent=S.log.join('\n');console.log(line)}
